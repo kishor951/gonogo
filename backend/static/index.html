@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>GoNoGo Discovery</title>
+<meta name="description" content="Know if a product will sell before you stock it.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23137a4f'/%3E%3Cpath d='M9 16.5l4.5 4.5L23 11.5' stroke='white' stroke-width='3.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="brand" href="/">
+      <svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="10" fill="var(--brand)"/><path d="M11 20.5l6 6L29 14" stroke="var(--brand-ink)" stroke-width="3.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div><h1>Go<b>No</b>Go</h1><div class="tag">Know if a product will sell before you stock it.</div></div>
+    </a>
+    <nav class="tabs" aria-label="Pages">
+      <a href="/" aria-current="page">Discovery</a>
+      <a href="/organisation">Organisation</a>
+    </nav>
+  </header>
+  <p class="shop-line" id="shop-line" hidden></p>
+
+  <div class="grid">
+    <form class="panel" id="form" novalidate>
+      <h2>Propose a product</h2>
+      <div class="examples" aria-label="Examples">
+        <span class="hint">Try an example:</span>
+        <button type="button" class="chip" data-example="0">Active leggings</button>
+        <button type="button" class="chip" data-example="1">Wool overcoat</button>
+      </div>
+      <div class="field">
+        <label for="name">Product name</label>
+        <input type="text" id="name" required maxlength="120" placeholder="e.g. High-waist active leggings">
+      </div>
+      <div class="field">
+        <label for="description">Description <span class="hint">(optional)</span></label>
+        <textarea id="description" maxlength="600" placeholder="Material, fit, who it's for"></textarea>
+      </div>
+      <div class="field">
+        <span class="label" id="dept-label">Department</span>
+        <div class="seg" role="radiogroup" aria-labelledby="dept-label">
+          <label><input type="radio" name="department" id="dept-women" value="Women" checked><span>Women</span></label>
+          <label><input type="radio" name="department" id="dept-men" value="Men"><span>Men</span></label>
+        </div>
+      </div>
+      <div class="field">
+        <label for="category">Category</label>
+        <select id="category"><option value="">Let the AI choose</option></select>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label for="cost">Cost price (₹)</label>
+          <input type="number" id="cost" min="1" step="1" required placeholder="450">
+        </div>
+        <div class="field">
+          <label for="price">Selling price (₹)</label>
+          <input type="number" id="price" min="1" step="1" placeholder="Optional">
+        </div>
+      </div>
+      <div class="field">
+        <label for="photo">Photo <span class="hint">(optional)</span></label>
+        <div class="photo">
+          <input type="file" id="photo" accept="image/*">
+          <img id="photo-preview" alt="" hidden>
+        </div>
+      </div>
+      <div class="rules-used" id="rules-used"></div>
+      <button class="btn" id="submit" type="submit">Get the verdict</button>
+    </form>
+
+    <section class="results" id="results" aria-live="polite">
+      <div class="panel empty">
+        <h2>How GoNoGo decides</h2>
+        <p>Describe a product you're thinking of stocking. AI agents check it against your sales history and today's online prices, find competing products, then a verdict agent applies your shop's rules from the Organisation page and explains the answer. Every reason opens to the numbers behind it.</p>
+        <div class="pipeline" aria-label="Agent flow">
+          <span class="node">Product</span><span class="arrow">→</span>
+          <span class="node">Market · Demand · Fit</span><span class="arrow">→</span>
+          <span class="node">Profit</span><span class="arrow">→</span>
+          <span class="node final">Verdict</span>
+        </div>
+      </div>
+    </section>
+  </div>
+  <footer>Sales history: Google's public thelook_ecommerce sample store in BigQuery. Market prices and competitor products: Gemini with Grounding with Google Search. Built for the Google Cloud AI Builder Cup 2026.</footer>
+</div>
+
+<script src="/static/shared.js"></script>
+<script>
+const EXAMPLES = [
+  {name: "High-waist active leggings", description: "Squat-proof stretch leggings with a side phone pocket, for gym and yoga", department: "Women", category: "Leggings", cost: 450, price: 1299},
+  {name: "Double-breasted wool overcoat", description: "Long, heavy wool-blend winter overcoat", department: "Men", category: "Outerwear & Coats", cost: 6500, price: 8999},
+];
+const AGENT_INFO = {
+  product: ["Product agent", "Reads the idea and photo"],
+  market: ["Market agent", "Prices and competitors via Google Search"],
+  demand: ["Demand agent", "Comparable sales in BigQuery"],
+  fit: ["Fit agent", "Basket and buyer segments"],
+  profit: ["Profit agent", "Margin and break-even, in code"],
+  verdict: ["Verdict agent", "Applies your rules, explains"],
+};
+const WORD = {go: "Go", no_go: "No-go", go_with_conditions: "Go, with conditions"};
+const org = loadOrg();
+let categories = [];
+let photoData = null;
+
+// --- organisation context ---
+if (org.shop_name) {
+  $("shop-line").hidden = false;
+  $("shop-line").innerHTML = `Deciding for <b>${esc(org.shop_name)}</b>`;
+}
+const r = org.rules;
+$("rules-used").innerHTML = `<span><strong>Your rules</strong> · <a href="/organisation">edit on Organisation</a></span>
+  <span class="vals">Margin ≥ ${esc(r.min_margin_pct)}% · break-even ≤ ${esc(r.max_breakeven_weeks)} weeks · fees ${esc(r.platform_fee_pct)}% · shipping ${inr(r.shipping_per_unit)} · launch cost ${inr(r.launch_cost)}</span>`;
+
+// --- form setup ---
+function fillCategories() {
+  const dept = document.querySelector("input[name=department]:checked").value;
+  const sel = $("category"), keep = sel.value;
+  const cats = categories.filter(c => c.department === dept).map(c => c.category);
+  sel.innerHTML = `<option value="">Let the AI choose</option>` + cats.map(c => `<option>${esc(c)}</option>`).join("");
+  if (cats.includes(keep)) sel.value = keep;
+}
+document.querySelectorAll("input[name=department]").forEach(el => el.addEventListener("change", fillCategories));
+fetch("/api/categories").then(res => res.ok ? res.json() : []).then(rows => { categories = rows; fillCategories(); }).catch(() => {});
+
+document.querySelectorAll("[data-example]").forEach(btn => btn.addEventListener("click", () => {
+  const ex = EXAMPLES[+btn.dataset.example];
+  $("name").value = ex.name; $("description").value = ex.description;
+  $(ex.department === "Men" ? "dept-men" : "dept-women").checked = true;
+  fillCategories(); $("category").value = ex.category;
+  $("cost").value = ex.cost; $("price").value = ex.price;
+}));
+
+$("photo").addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  photoData = null; $("photo-preview").hidden = true;
+  if (!file) return;
+  const img = new Image();
+  img.onload = () => {   // shrink to 1024px so the upload stays small
+    const scale = Math.min(1, 1024 / Math.max(img.width, img.height));
+    const c = document.createElement("canvas");
+    c.width = Math.round(img.width * scale); c.height = Math.round(img.height * scale);
+    c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+    photoData = c.toDataURL("image/jpeg", 0.85);
+    $("photo-preview").src = photoData; $("photo-preview").hidden = false;
+    URL.revokeObjectURL(img.src);
+  };
+  img.src = URL.createObjectURL(file);
+});
+
+// --- submit ---
+$("form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const name = $("name").value.trim(), cost = parseFloat($("cost").value);
+  if (name.length < 2 || !(cost > 0)) { showError("Add a product name and a cost price to get a verdict."); return; }
+  const body = {
+    name, description: $("description").value.trim(),
+    department: document.querySelector("input[name=department]:checked").value,
+    category: $("category").value || null, cost,
+    price: parseFloat($("price").value) || null, image: photoData, assumptions: org.rules,
+  };
+  showLoading();
+  $("submit").disabled = true;
+  try {
+    const res = await fetch("/api/evaluate", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body)});
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(typeof data.detail === "string" ? data.detail : `The server answered ${res.status}. Check the form and try again.`);
+    render(data, body);
+  } catch (err) {
+    showError(err.message || "Something went wrong. Try again.");
+  } finally {
+    $("submit").disabled = false; clearInterval(window._timer);
+  }
+});
+
+function showLoading() {
+  const t0 = Date.now();
+  $("results").innerHTML = `<div class="panel loading"><h2>Agents at work <span class="hint" id="elapsed">0s</span></h2><ul>${
+    Object.entries(AGENT_INFO).map(([k, [n, d]]) => `<li><span class="dot working"></span>${esc(n)}<span class="d">${esc(d)}</span></li>`).join("")
+  }</ul><p class="note">Usually 30 to 45 seconds. The live market search takes longest.</p></div>`;
+  clearInterval(window._timer);
+  window._timer = setInterval(() => { const el = $("elapsed"); if (el) el.textContent = Math.round((Date.now() - t0) / 1000) + "s"; }, 500);
+}
+function showError(msg) {
+  $("results").innerHTML = `<div class="error" role="alert"><strong>Couldn't get a verdict.</strong> ${esc(msg)}</div>`;
+}
+
+// --- rendering ---
+function cellHTML(c) {
+  if (c && typeof c === "object" && c.url) return `<a href="${esc(c.url)}" target="_blank" rel="noopener">${esc(c.text || "Open")}</a>`;
+  return esc(c);
+}
+function evidenceHTML(ev) {
+  if (!ev || !Object.keys(ev).length) return `<p class="note">No evidence recorded for this agent.</p>`;
+  let h = "";
+  if (ev.summary) h += `<dl>${ev.summary.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("")}</dl>`;
+  (ev.tables || []).forEach(t => {
+    const numCol = (i) => t.rows.every(row => typeof row[i] !== "object" && /^[-₹\d.,%\s+x]+$/.test(String(row[i] ?? "")));
+    h += `<div><p class="tbl-title">${esc(t.title)}</p><div class="tbl-wrap"><table><thead><tr>${
+      t.columns.map((c, i) => `<th class="${numCol(i) ? "n" : ""}">${esc(c)}</th>`).join("")}</tr></thead><tbody>${
+      t.rows.map(row => `<tr>${row.map((c, i) => `<td class="${numCol(i) ? "n" : ""}">${cellHTML(c)}</td>`).join("")}</tr>`).join("")
+    }</tbody></table></div></div>`;
+  });
+  if (ev.links && ev.links.length) h += `<div><p class="tbl-title">Sources</p><ol class="links">${
+    ev.links.map(l => `<li><a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.title)}</a></li>`).join("")}</ol></div>`;
+  if (ev.note) h += `<p class="note">${esc(ev.note)}</p>`;
+  return h;
+}
+
+function sparkline(values) {
+  if (!values || values.length < 2 || Math.max(...values) === 0) return "";
+  const w = 600, h = 80, pad = 6, max = Math.max(...values);
+  const x = (i) => pad + i * (w - 2 * pad) / (values.length - 1);
+  const y = (v) => h - pad - (v / max) * (h - 2 * pad - 14);
+  const pts = values.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(" ");
+  const last = values.length - 1;
+  return `<svg class="spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" role="img" aria-label="Units sold by comparable products, last 12 months">
+    <polygon points="${x(0)},${h - pad} ${pts} ${x(last)},${h - pad}" fill="var(--brand)" fill-opacity=".12"/>
+    <polyline points="${pts}" fill="none" stroke="var(--brand)" stroke-width="2" vector-effect="non-scaling-stroke"/>
+    <circle cx="${x(last)}" cy="${y(values[last])}" r="4" fill="var(--brand)"/></svg>`;
+}
+
+function competitorsHTML(list, mine, range) {
+  if (!list || !list.length) return "";
+  const rows = [...list].sort((a, b) => (a.price_inr ?? 1e12) - (b.price_inr ?? 1e12));
+  const rangeText = range && range.low_inr && range.high_inr ? `Online range ${inr(range.low_inr)} to ${inr(range.high_inr)}` : "From Google Search";
+  return `<div class="panel section">
+    <div class="section-head"><h2>Competitor products</h2><span class="hint">${esc(rangeText)}</span></div>
+    <ul class="comp-list">
+      <li class="comp mine"><div><div class="nm">${esc(mine.name)} <span class="hint">(yours)</span></div><div class="st">Your proposed price</div></div>
+        <span class="pr">${inr(mine.price)}</span><span></span></li>
+      ${rows.map(p => `<li class="comp"><div><div class="nm">${esc(p.name)}</div><div class="st">${esc(p.store)}</div></div>
+        <span class="pr">${inr(p.price_inr)}</span>
+        <a href="${esc(p.url)}" target="_blank" rel="noopener">${p.link_type === "product" ? "View product ↗" : "Search " + esc(p.store) + " ↗"}</a></li>`).join("")}
+    </ul>
+    <p class="note">"View product" opens a page Google Search found for this product. "Search" opens that store's search for it.</p>
+  </div>`;
+}
+
+function render(d, body) {
+  const k = d.key_numbers || {};
+  const bw = k.breakeven_weeks;
+  const kpis = [
+    ["Selling price", inr(k.price), k.price_assumed ? "suggested (2.2x cost)" : "your price"],
+    ["Expected sales", k.expected_monthly_units != null ? Math.round(k.expected_monthly_units) + " / month" : "-", "from comparable products"],
+    ["Margin", k.margin != null ? (k.margin * 100).toFixed(1) + "%" : "-", "after fees, shipping, returns"],
+    ["Break-even", bw != null ? "week " + Math.max(1, Math.ceil(bw)) : "never", "launch cost recovered"],
+    ["Opening order", k.opening_stock != null ? k.opening_stock + " units" : "-", "lead time + cover"],
+    ["Cash tied up", inr(k.cash_tied), "in opening stock"],
+  ];
+  const agents = d.agents || {};
+  const failed = Object.entries(agents).filter(([, a]) => a.status === "failed").map(([n]) => AGENT_INFO[n]?.[0] || n);
+
+  $("results").innerHTML = `
+    <div class="verdict ${esc(d.verdict)}">
+      <div class="word">${esc(WORD[d.verdict] || d.verdict)}</div>
+      <p class="headline">${esc(d.headline)}</p>
+      ${d.conditions && d.conditions.length ? `<ul>${d.conditions.map(c => `<li>${esc(c)}</li>`).join("")}</ul>` : ""}
+      ${d.advice ? `<p class="advice">${esc(d.advice)}</p>` : ""}
+    </div>
+    ${failed.length ? `<div class="error"><strong>Partial result.</strong> ${esc(failed.join(", "))} did not finish; the verdict uses the other agents.</div>` : ""}
+    <div class="kpis">${kpis.map(([a, b, c]) => `<div class="kpi"><span class="k">${esc(a)}</span><span class="v">${esc(b)}</span><span class="s">${esc(c)}</span></div>`).join("")}</div>
+
+    <div class="panel section">
+      <div class="section-head"><h2>Why</h2><span class="hint">Open a reason to see its evidence</span></div>
+      ${(d.reasons || []).map((rs, i) => `
+        <details class="reason"${i === 0 ? " open" : ""}>
+          <summary><span class="num">0${i + 1}</span><span>${esc(rs.text)}</span><span class="agent-tag">${esc(AGENT_INFO[rs.agent]?.[0] || rs.agent)}</span></summary>
+          <div class="evidence">${evidenceHTML(rs.evidence)}</div>
+        </details>`).join("")}
+    </div>
+
+    ${competitorsHTML(d.competitor_products, {name: body.name, price: k.price}, d.market_range)}
+
+    <div class="panel section">
+      <div class="section-head"><h2>Your rules</h2><a class="hint" href="/organisation">Edit on Organisation</a></div>
+      <ul class="checks">${(d.checks || []).map(c => `
+        <li><span class="pill ${c.passed ? "pass" : (c.hard ? "fail" : "warn")}">${c.passed ? "Pass" : (c.hard ? "Fail" : "Watch")}</span>
+        <span>${esc(c.label)}${c.hard ? "" : ' <span class="hint">(soft)</span>'}</span><span class="val">${esc(c.value)}</span></li>`).join("")}</ul>
+    </div>
+
+    ${d.trend && d.trend.length ? `<div class="panel section">
+      <div class="section-head"><h2>Demand for comparable products</h2><span class="hint">Units per 30 days, last 12 months</span></div>
+      ${sparkline(d.trend)}
+    </div>` : ""}
+
+    <div class="panel section">
+      <div class="section-head"><h2>The agents</h2><span class="hint">Finished in ${(d.timing_ms / 1000).toFixed(1)}s</span></div>
+      <div class="agents">${Object.keys(AGENT_INFO).filter(n => agents[n]).map(n => {
+        const a = agents[n];
+        return `<details class="agent"><summary><span class="name"><span class="dot ${esc(a.status)}"></span>${esc(AGENT_INFO[n][0])}</span>
+          <span class="meta">${esc(a.status)} · ${(a.ms / 1000).toFixed(1)}s</span></summary>
+          <div class="evidence">${a.status === "failed" ? `<p class="note">${esc(a.error)}</p>` : evidenceHTML(a.evidence)}${a.note ? `<p class="note">${esc(a.note)}</p>` : ""}</div></details>`;
+      }).join("")}</div>
+    </div>`;
+  $("results").scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start"});
+}
+</script>
+</body>
+</html>
