@@ -2,144 +2,180 @@
 
 **Know if a product will sell before you stock it.**
 
-GoNoGo is an AI launch-decision agent for retailers. A seller proposes a new product. Specialist agents built on Gemini check it against real sales history in BigQuery and today's online prices, then a verdict agent applies the seller's own rules and returns **Go**, **No-go** or **Go, with conditions**, with three reasons. Every reason opens to the numbers or sources behind it.
+A shop owner is offered a new product and has to decide how many to buy, usually on gut feel. If they buy and it doesn't sell, their cash sits on the shelf. If they pass on a winner, a competitor gets the sales.
 
-Built for the Google Cloud AI Builder Cup 2026, Retail & Commerce theme.
+GoNoGo is an AI launch-decision agent for retailers. The seller adds a photo (or a name) and the purchase price. A team of six agents checks the idea against the shop's own sales, stock and customers in BigQuery and against live online prices found with Google Search. The seller gets **Go**, **No-go** or **Go, with conditions** in about a minute, with three plain reasons. Each reason links to the numbers and pages behind it.
 
-**Live app:** https://gonogo-389639819210.asia-south1.run.app
+Built for the Google Cloud AI Builder Cup 2026 (Retail & Commerce).
 
-## Pages
+**Live app:** https://gonogo-389639819210.asia-south1.run.app (open; 10 checks per person per hour)
 
-- **Discovery** (`/`): propose a product and get the verdict, the reasons with evidence, competitor products with links, and your rule checks.
-A sidebar on every page links them all.
+## The core idea: AI explains, code decides
 
-- **Products, Inventory, Sales, Returns, Customers, Suppliers** (`/products`, `/inventory`, ...): the shop's data, each with key numbers and tables you can search, filter and sort. Inventory flags products to reorder, overstock (over 120 days of cover) and dead stock (no sale in 90 days).
-- **Business** (`/business`): the shop's key numbers for the last 12 months with change vs the 12 months before, monthly revenue, category performance, channel split, and the shop's rules. Rules are saved in BigQuery, so every browser and every Discovery verdict uses the same ones. (`/organisation` redirects here.)
+- **Every number comes from SQL or Python**, never from the model. Gemini reads, searches and explains; prompts pass numbers in and say "never invent numbers".
+- **The verdict comes from the seller's own rules, checked in code** ([`agents/verdict.py`](backend/agents/verdict.py)). Gemini writes the headline and reasons but cannot change the verdict.
+- **Links are never invented.** Competitor products are real product pages that Google Search returned; each row's name, price and picture are read from that page.
+
+## What it does
+
+**Discovery** (`/`) is a chat:
+
+1. **Add the product.** Type it, or upload or paste a photo. Gemini finds every product in the photo and numbers them; the seller picks one and only that crop is checked.
+2. **Enter the purchase price.** A selling price is suggested from the shop's own prices in that category (SQL).
+3. **Watch the team work.** Results stream in as each agent finishes:
+
+| Agent | Question | How |
+|---|---|---|
+| Iris · Product | What is it, and does this shop sell that kind of thing? | Gemini (vision + JSON), checked against the shop's own catalogue in code |
+| Scout · Market | What do similar products sell for online? | Gemini with Grounding with Google Search, one search per marketplace; prices and pictures read from the product pages |
+| Ledger · Demand | How fast do similar products sell here? | BigQuery: comparable products (same category, price within ±30%), sales speed vs the shop average, trend vs last year, returns |
+| Echo · Fit | Who buys it, and through which channels? | BigQuery: baskets, age bands, channels, cities |
+| Penny · Profit | Does it make money, and can the shop afford it? | Python: margin after fees, shipping and returns; break-even; opening order; cash needed; test budget |
+| Vera · Verdict | Go or no-go? | Rule checks in code; Gemini writes the explanation |
+
+4. **Read the answer**: the verdict, how many to order to start, the cash needed and three reasons. **References** holds the proof: similar products online, every rule check, and the shop's own sales.
+
+### The rules
+
+Hard rules (any failure is a No-go):
+
+| Rule | Default |
+|---|---|
+| The shop sells this kind of product | from the shop profile and catalogue |
+| Margin after all costs | at least 20% |
+| Launch cost earned back | within 12 weeks |
+| Similar products sell at least this fast | 0.7× the shop's average product |
+| Opening order + launch cost fit the test budget | per-launch budget (below) |
+| Not already sitting in stock unsold | the same product, or the same style in other colours, with no sale in 90 days |
+
+Soft rules turn a Go into **Go, with conditions**: similar products sell slower than average (0.7–1×), sales are falling against the rest of the shop, or the price is outside the online range.
+
+**Test budget.** Monthly profit run-rate (last 90 days) × the share the owner sets for experiments (default 10%), adjusted for growth and slow stock, then split across planned launches per month ([`agents/budget.py`](backend/agents/budget.py)). The Business page shows how it's worked out.
+
+### The other pages
+
+- **Business** (`/business`): the last 12 months against the 12 before, monthly revenue, categories, channels, the test budget and the rules. Rules are saved in BigQuery, so every verdict uses the same ones.
+- **Shop profile** (`/shop`): what the shop is, who it sells to and what it never sells. The Product and Verdict agents judge against this.
+- **Products, Inventory, Sales, Returns, Customers, Suppliers**: the shop's data with search, filters and pages. Inventory flags products to reorder, overstock and dead stock.
+- **Recent checks** in the sidebar: the latest three, with search, Go / Conditions / No-go filters and delete. Saved in the browser.
+- **SOP**: a short slide guide on the empty Discovery page, telling the story through Priya, a shop owner, then how to use the tool.
 
 ## The demo shop: Urban Loom
 
-Urban Loom is a **synthetic** mid-size Indian online fashion shop (women's and men's apparel, sold on its website, Myntra and Amazon, prices in rupees). `scripts/generate_shop_data.py` creates two years of data with realistic patterns: a long tail of slow sellers, winter outerwear, January activewear peaks, kurtas and activewear growing ~30% a year, formal trousers declining, 8-26% returns by category, discounts, and stock problems (items to reorder, overstock, dead stock).
+Urban Loom is a **synthetic** mid-size Indian online fashion shop (women's and men's apparel; website, Myntra and Amazon; prices in rupees). [`scripts/generate_shop_data.py`](scripts/generate_shop_data.py) creates 24 months of data with realistic patterns: a long tail of slow sellers, winter outerwear, January activewear peaks, growing and declining categories, 8–26% returns, discounts, and stock problems.
 
 | Table | Rows | What it holds |
 |---|---|---|
-| `suppliers` | 12 | lead times and minimum order quantities |
+| `suppliers` | 12 | lead times, minimum order quantities |
 | `products` | 180 | SKU, department, category, brand, cost and list price, launch date, status |
-| `customers` | 6,000 | age band, city, first order date |
-| `sales` | ~53,000 | order lines: date, SKU, qty, price paid, channel, customer, returned |
+| `customers` | 6,000 | age band, city, first order date (no names or contact details) |
+| `sales` | ~53,000 | order lines: date, SKU, quantity, price paid, channel, customer, returned |
 | `inventory` | 180 | on hand, on order, reorder point, last received |
-| `settings` | 1 | shop name and rules (written by the Business page) |
+| `settings` | 1 | shop name, rules and shop profile (written by the app) |
 
-## How it works
+## Google Cloud
+
+- **Gemini 2.5 Flash on Vertex AI** (`google-genai`, `us-central1`): photo reading, product understanding, explanations
+- **Grounding with Google Search**: live prices and competitor product pages
+- **BigQuery** (`gonogo_shop`, `asia-south1`): all shop data and settings; every query is a parameterised `.sql` file in [`backend/sql/`](backend/sql/)
+- **Cloud Run** (`asia-south1`): one FastAPI service for the pages and the API, scaling to zero, at most 2 instances
+- **Cloud Build** and **Artifact Registry**: used by `gcloud run deploy --source`
+- **IAM**: the app runs as its own service account with only the roles it needs (below); Application Default Credentials, no keys in the code
 
 ```
-Seller input ──► Product agent ──► Market agent  (Gemini + Google Search grounding) ──┐
- (name, photo,   (Gemini: maps      Demand agent  (BigQuery: comparable sales)       ├──► Profit agent ──► Verdict agent
-  cost, price)    to a category)    Fit agent     (BigQuery: basket + buyer ages)   ─┘    (Python maths)    (rules in code,
-                                    ...these three run in parallel                                           Gemini explains)
+Browser (HTML + CSS + JS, no build step)
+   │  HTTPS · results streamed as NDJSON
+   ▼
+Cloud Run · FastAPI ── per-person limits
+   ├─ Orchestrator (asyncio): runs the agents in parallel, streams start / done / failed for each
+   │    ├─ Product, Market, Verdict, Autofill ─► Gemini on Vertex AI (+ Google Search grounding)
+   │    ├─ Market ─► reads the product pages Search returned (price, picture, rating)
+   │    ├─ Demand, Fit, Budget, shop pages ─► BigQuery
+   │    └─ Profit, rule checks ─► Python
+   └─ Settings (rules + shop profile) ◄─► BigQuery
 ```
 
-| Agent | What it answers | How |
-|---|---|---|
-| Product | What exactly is this product? | Gemini reads the description and optional photo, maps it to a store category |
-| Market | What do similar products sell for online, and who sells them? | Gemini with Grounding with Google Search; competitor products linked to the real pages Search returned (or to a store search when no page matched) |
-| Demand | How fast would it sell? | BigQuery: comparable products (same category, price within ±30%), units per product per month vs the shop average, last 3 months vs the same months last year, return rate |
-| Fit | Who buys it, and with what? | BigQuery: basket analysis, buyer age bands, channels and top cities |
-| Profit | Does it make money? | Python: margin after fees, shipping and returns; break-even; opening order; cash tied up |
-| Verdict | Go or no-go? | The seller's rules are checked in code (so verdicts are consistent); Gemini writes the headline, reasons and conditions and may not change the verdict |
-
-**Numbers are calculated, never generated.** Gemini understands, searches and explains; BigQuery and Python produce every figure.
-
-## Google Cloud services
-
-- **Gemini on Vertex AI** (google-genai SDK)
-- **Grounding with Google Search**
-- **BigQuery** with the shop's own dataset (`gonogo_shop`, in `asia-south1`)
-- **Cloud Run** (one service: API + web page)
-- **Cloud Build** and **Artifact Registry** (used automatically by `gcloud run deploy --source`)
-- **IAM**: the Cloud Run service account calls Vertex AI and BigQuery; no keys in the code
+One agent failing never stops a check: it's marked as failed and the others carry on.
 
 ## Project layout
 
 ```
 backend/
-  main.py              FastAPI app: pages, /api/categories, /api/business, /api/settings, /api/evaluate
-  config.py            model, region, dataset, default seller rules
-  agents/              one file per agent + orchestrator.py, business.py, settings.py
-  sql/                 the BigQuery queries ({dataset} is filled in from GONOGO_DATASET)
-  static/              index.html (Discovery), business.html, app.css, shared.js
-  test_local.py        run the two demo cases from the command line
-  Dockerfile
+  main.py           FastAPI app: pages and /api/* routes
+  config.py         model, regions, dataset, default rules
+  limits.py         per-person hourly limits
+  access.py         optional access-code gate (off unless GONOGO_ACCESS_CODE is set)
+  agents/           one file per agent; orchestrator.py runs them
+    llm.py          Gemini helper (JSON output, search grounding)
+    bq.py           runs backend/sql/<name>.sql with parameters
+    mock.py         sample data for GONOGO_MOCK=1
+  sql/              one parameterised query per file
+  static/           the pages: index.html (Discovery), business.html, shop.html, data.html + data.js,
+                    agents.js (the agent team), shared.js (sidebar, settings), app.css
+  test_local.py     runs demo cases from the command line
 scripts/
-  generate_shop_data.py  creates the Urban Loom CSVs in scripts/data/
-  load_to_bigquery.py    loads them into BigQuery
+  generate_shop_data.py   creates the Urban Loom CSVs in scripts/data/
+  load_to_bigquery.py     loads them into BigQuery
 ```
 
-## Run it
+## Run it locally
 
-Load the demo shop once (from the repo root, with the backend's virtual environment active):
+You need Python 3.11 and the Google Cloud CLI.
 
 ```bash
 gcloud auth application-default login
-python scripts/generate_shop_data.py       # writes scripts/data/*.csv
-python scripts/load_to_bigquery.py         # creates gonogo-511.gonogo_shop and loads every table
-```
 
-Then run the app:
+# once: create and load the demo shop
+python scripts/generate_shop_data.py
+python scripts/load_to_bigquery.py
 
-```bash
+# the app
 cd backend
+python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-export GOOGLE_CLOUD_PROJECT=gonogo-511
-
-python test_local.py                       # two demo cases, real Gemini + BigQuery
-uvicorn main:app --port 8080               # then open http://localhost:8080
+GOOGLE_CLOUD_PROJECT=gonogo-511 uvicorn main:app --reload --port 8080
 ```
 
-`GONOGO_MOCK=1` runs everything on sample data with no Google Cloud calls.
+Open http://localhost:8080. To run without Google Cloud on sample data, add `GONOGO_MOCK=1`.
 
 ## Deploy
-
-The live demo is locked with an access code, so only evaluators can use it (and nobody else can spend the Gemini quota
-or change the rules). Choose a code, keep it out of the repo, and pass it at deploy time:
 
 ```bash
 cd backend
 gcloud run deploy gonogo --source . --region asia-south1 --allow-unauthenticated --max-instances=2 \
-  --set-env-vars GOOGLE_CLOUD_PROJECT=gonogo-511,GONOGO_ACCESS_CODE=YOUR-CODE
+  --service-account gonogo-run@gonogo-511.iam.gserviceaccount.com \
+  --set-env-vars GOOGLE_CLOUD_PROJECT=gonogo-511
 ```
 
-Change the code later (everyone has to enter the new one):
+The `gonogo-run` service account needs only:
 
-```bash
-gcloud run services update gonogo --region asia-south1 --update-env-vars GONOGO_ACCESS_CODE=NEW-CODE
-```
+| Role | Where | Why |
+|---|---|---|
+| `roles/aiplatform.user` | project | call Gemini |
+| `roles/bigquery.jobUser` | project | run queries |
+| `roles/bigquery.dataViewer` | project | read the shop's data |
+| `roles/bigquery.dataEditor` | the `gonogo_shop` dataset only | save the rules and shop profile |
 
-Without `GONOGO_ACCESS_CODE` (for example on your laptop) the app is open.
+To use another dataset, set `GONOGO_DATASET=project.dataset`. To put the demo behind a code, add `GONOGO_ACCESS_CODE=<code>` to the environment variables; keep the code out of the repo.
 
-### Older deploy notes
+## Safety
 
-```bash
-cd backend
-gcloud run deploy gonogo --source . --region asia-south1 --allow-unauthenticated \
-  --set-env-vars GOOGLE_CLOUD_PROJECT=YOUR_PROJECT_ID
-```
-
-The Cloud Run service account needs `roles/aiplatform.user`, `roles/bigquery.jobUser`, `roles/bigquery.dataViewer`, and `roles/bigquery.dataEditor` (the Business page saves the rules to the `settings` table):
-
-```bash
-gcloud projects add-iam-policy-binding gonogo-511 \
-  --member="serviceAccount:389639819210-compute@developer.gserviceaccount.com" \
-  --role="roles/bigquery.dataEditor"
-```
-
-To use another dataset, set `GONOGO_DATASET=project.dataset` on the service.
+- No keys or credentials in the repo: Application Default Credentials only, and `.gitignore` blocks `.env`, `*.json` and key files.
+- Per-person hourly limits on everything that costs money or changes data: 10 checks, 30 photo reads, 20 settings saves ([`limits.py`](backend/limits.py)).
+- The server fetches only `https://` product pages on the known marketplaces' own hosts.
+- Text from the model and from store pages is escaped before it's shown.
 
 ## Assumptions and limits
 
-- Urban Loom is synthetic: the numbers are realistic but made up. It sells apparel only, so comparables exist for apparel.
-- Expected sales = what comparable products (same category, similar price) sell per product per month in the last 12 months, counting only the months each was on sale.
-- The trend compares the last 3 months with the same 3 months a year earlier, relative to the whole shop, so seasons cancel out.
+- Urban Loom's numbers are realistic but made up, and it sells apparel only.
+- Expected sales = what comparable products (same category, similar price) sell per product per month over the last 12 months, counting only the months each was on sale.
+- Trend compares the last 3 months with the same 3 months a year earlier, relative to the whole shop, so seasons cancel out.
+- Some stores block automated visits from cloud servers, so the live site can show fewer product pictures than a local run.
+- Recent checks are kept in the browser, not in the cloud.
 
-## Next steps
+## What's next
 
-Connect a seller's own sales data (point-of-sale exports, Shopify, ONDC catalogues), compare each launch's real sales with the forecast to improve future verdicts, suggest products from basket gaps, and support regional languages.
+- **Make it a Go:** for a No-go, work out the smallest change that passes every rule (cost, price, opening order).
+- **Compare ideas:** check up to three products at once and rank them by margin, speed, cash and risk.
+- **Connect real shops:** Shopify, WooCommerce and marketplace seller APIs instead of the demo data.
+- **Learn from outcomes:** compare each launch's real sales with the forecast and tune the rules.

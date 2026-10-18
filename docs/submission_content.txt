@@ -122,9 +122,9 @@ Shop pages
     days of cover) and Dead stock (no sale in 90 days).
 
 Platform
-  - Access-code gate for the live demo, mock mode for running offline,
-    one failed agent never crashes a request, works at phone width and in
-    dark mode.
+  - Per-person hourly limits (checks, photo reads, rule saves), mock mode
+    for running offline, one failed agent never crashes a request, works
+    at phone width and in dark mode.
 
 
 PAGE 5 - PROCESS FLOW DIAGRAM
@@ -180,7 +180,7 @@ Browser (HTML + CSS + JS, no build step)
    |  HTTPS, NDJSON streaming
    v
 Cloud Run (asia-south1) - one FastAPI service: pages + /api/*
-   |  access gate (HMAC cookie)
+   |  per-person hourly limits
    |
    +-- Orchestrator (asyncio) - runs agents, streams
    |   start/done/failed per agent
@@ -212,8 +212,8 @@ PAGE 8 - TECHNOLOGIES TO BE USED IN THE SOLUTION
     settings
   - Backend: Python 3.11, FastAPI, asyncio, Pydantic, Uvicorn
   - Hosting: Cloud Run, Cloud Build, Artifact Registry
-  - Security: IAM service account with least-privilege roles,
-    Application Default Credentials, access-code gate
+  - Security: a dedicated IAM service account with least-privilege roles,
+    Application Default Credentials (no keys in code), per-person limits
   - Frontend: plain HTML, CSS and JavaScript, streaming (NDJSON), inline
     SVG charts, light/dark theme
   - Demo data: Python generator for the synthetic shop "Urban Loom":
@@ -328,8 +328,7 @@ PAGE 13 - LINKS
 GitHub Public Repository:   https://github.com/kishor951/gonogo
 Demo Video Link (3 min):    [add your YouTube or Drive link]
 Final Product Link:         https://gonogo-389639819210.asia-south1.run.app
-                            (share the access code in the submission
-                            form, not in the deck, if the deck is public)
+                            (open, no sign-in needed)
 
 
 PAGE 14 - (EMPTY)
