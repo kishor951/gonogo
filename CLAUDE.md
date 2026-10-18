@@ -19,8 +19,9 @@ so the owner can test locally and deploy.
 
 ## Google Cloud
 - Project: `gonogo-511` · Cloud Run region: `asia-south1` · Vertex AI region: `us-central1`
-- Cloud Run service account: `<PROJECT_NUMBER>-compute@developer.gserviceaccount.com`
-  with roles `aiplatform.user`, `bigquery.jobUser`, `bigquery.dataViewer` (add `bigquery.dataEditor` when the app writes settings)
+- Cloud Run runs as `gonogo-run@gonogo-511.iam.gserviceaccount.com` (since 18 Oct 2026): `aiplatform.user`, `bigquery.jobUser`,
+  `bigquery.dataViewer` on the project, `bigquery.dataEditor` on the `gonogo_shop` dataset only. The default compute account
+  (which has Editor) is used only by Cloud Build for deploys.
 
 ## Layout
 ```
@@ -46,7 +47,7 @@ Run from `backend/` with the virtual environment active.
 - Run locally (Windows PowerShell): `$env:GOOGLE_CLOUD_PROJECT="gonogo-511"; uvicorn main:app --reload --port 8080`
 - Run without Google Cloud (sample data): set `GONOGO_MOCK=1` as well
 - Demo cases from the terminal: `python test_local.py`
-- Deploy: `gcloud run deploy gonogo --source . --region asia-south1 --allow-unauthenticated --max-instances=2 --set-env-vars GOOGLE_CLOUD_PROJECT=gonogo-511`
+- Deploy: `gcloud run deploy gonogo --source . --region asia-south1 --allow-unauthenticated --max-instances=2 --service-account gonogo-run@gonogo-511.iam.gserviceaccount.com --set-env-vars GOOGLE_CLOUD_PROJECT=gonogo-511`
   (the live site is open: the access gate is off since 18 Oct 2026; add `,GONOGO_ACCESS_CODE=<code>` to turn it back on)
 - Access gate (`backend/access.py`): with `GONOGO_ACCESS_CODE` set, pages redirect to `/access` and `/api/*` answers 401 until the
   code is entered (HttpOnly cookie = HMAC of the code, 30 days; 10 wrong tries per IP per 10 min). Unset = open. Never commit the code.
