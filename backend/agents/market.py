@@ -1,11 +1,12 @@
 """Market agent: Gemini with Grounding with Google Search finds what similar products sell for
 online in India right now, which competitor products exist, and keeps the sources.
 
-Competitor links are never invented: each product is linked to a real page that Google Search
-returned (matched by store and product words). If no matching page was found, the link is a
-search on that store for the product name, and is labelled as a search.
+Competitor links are never invented, and each one opens that exact product: only product pages
+that Google Search returned are listed (store search and category pages are dropped), and each
+row's name and price come from that page itself, so the row and the page it opens always agree.
 """
 import asyncio
+import html as htmllib
 import re
 import ssl
 import urllib.error
@@ -95,9 +96,11 @@ async def resolve_sources(sources: list[dict]) -> list[dict]:
     return out
 
 
-def link_products(products: list[dict], sources: list[dict]) -> list[dict]:
-    """Attach a real search-result page to each product where one matches; otherwise a store search."""
-    linked = []
+def link_products(products: list[dict], sources: list[dict], strict: bool = True) -> list[dict]:
+    """Attach the product page Google Search returned for each product. With strict (real searches), only a
+    real product page that clearly matches (3+ shared words) counts, and products without one are dropped;
+    otherwise (mock data) the link falls back to a store search, labelled as a search."""
+    linked, used = [], set()
     for p in products:
         name, store = p.get("name", "").strip(), p.get("store", "").strip()
         if not name:
@@ -105,12 +108,19 @@ def link_products(products: list[dict], sources: list[dict]) -> list[dict]:
         key, want = _store_key(store), _tokens(name)
         best, best_score = None, 0
         for s in sources:
-            if key and key in s["url"].lower():
-                score = len(want & _tokens(urllib.parse.urlparse(s["url"]).path))
-                if score > best_score:
-                    best, best_score = s, score
-        if best and best_score >= 2:
-            url, kind = best["url"], "product"
+            url = s["url"].split("?")[0] if strict else s["url"]
+            if not key or key not in url.lower() or url in used or (strict and not is_product_page(url)):
+                continue
+            score = _page_match(want, url) if strict else len(want & _tokens(urllib.parse.urlparse(url).path))
+            if score > best_score:
+                best, best_score = url, score
+        if best and best_score >= (3 if strict else 2):
+            url, kind = best, "product"
+            used.add(best)
+            if strict:
+                name = _slug_name(url) or name   # the page's name (its own title replaces it when the page can be read)
+        elif strict:
+            continue
         else:
             url, kind = search_link(store, name), "search"
         rating, reviews = _num(p.get("rating")), _num(p.get("reviews"))
@@ -123,13 +133,28 @@ def link_products(products: list[dict], sources: list[dict]) -> list[dict]:
     return linked[:8]
 
 
-# Product-page addresses on the big marketplaces (search and category pages don't match).
+# Product-page addresses on the big marketplaces (search and category pages don't match). Anchored to https and
+# the store's own host, so the server only ever fetches those stores' pages.
 STORE_PAGES = [
-    ("myntra.com", "Myntra", re.compile(r"myntra\.com/.+/\d+/buy")),
-    ("flipkart.com", "Flipkart", re.compile(r"flipkart\.com/.+/p/itm")),
-    ("ajio.com", "Ajio", re.compile(r"ajio\.com/.+/p/")),
-    ("amazon.in", "Amazon.in", re.compile(r"amazon\.in/.*(/dp/|/gp/product/)")),
+    ("myntra.com", "Myntra", re.compile(r"^https://(?:www\.)?myntra\.com/.+/\d+/buy")),
+    ("flipkart.com", "Flipkart", re.compile(r"^https://(?:www\.|dl\.)?flipkart\.com/.+/p/itm")),
+    ("ajio.com", "Ajio", re.compile(r"^https://(?:www\.)?ajio\.com/.+/p/")),
+    ("amazon.in", "Amazon.in", re.compile(r"^https://(?:www\.)?amazon\.in/.*(/dp/|/gp/product/)")),
 ]
+_OTHER_PAGES = [re.compile(r"^https://(?:www\.)?nykaa(?:fashion)?\.com/.+/p/\d+"), re.compile(r"^https://(?:www\.)?meesho\.com/.+/p/\w+")]
+
+
+def _page_match(want: set, url: str) -> float:
+    """How well a product name matches a product page address: shared words, and they must cover most of
+    the page's own name (so "Nike high-waist sports leggings" never links to another brand's leggings page)."""
+    have = _tokens(_slug_name(url))
+    shared = len(want & have)
+    return shared if shared >= 3 and shared >= 0.6 * len(have) else 0
+
+
+def is_product_page(url: str) -> bool:
+    """A single product's page on a known store (not a search, category or brand page)."""
+    return any(rx.search(url) for _, _, rx in STORE_PAGES) or any(rx.search(url) for rx in _OTHER_PAGES)
 
 
 async def find_product_pages(query: str) -> list[dict]:
@@ -215,6 +240,7 @@ def _page_details(url: str) -> dict:
     t = _TITLE.search(html)
     name = ld.get("name") or (t.group(1) if t else None)
     if name:
+        name = htmllib.unescape(name)
         out["page_name"] = re.split(r"\s+[|\-–]\s+(?:Buy|Shop|Online|Myntra|Flipkart|Ajio|Amazon)", name)[0].strip()[:120]
     if ld.get("price") and ld["price"] > 0:
         out["page_price"] = ld["price"]
@@ -231,7 +257,7 @@ async def add_page_details(products: list[dict]) -> list[dict]:
     for p, extra in zip(pages, found):
         if extra.get("page_price"):
             p["price_inr"], p["price_source"] = extra["page_price"], "store page"
-        if extra.get("page_name") and p.get("from_page_only"):
+        if extra.get("page_name"):   # the page's own title, so the row matches what the link opens
             p["name"] = extra["page_name"]
         p.update({k: v for k, v in extra.items() if k in ("image", "rating", "reviews", "rating_source") and v is not None})
     return products
@@ -249,11 +275,12 @@ def merge_store_pages(products: list[dict], pages: list[dict]) -> list[dict]:
         for page in pages:
             if page["url"] in used or key not in page["url"]:
                 continue
-            score = len(want & _tokens(urllib.parse.urlparse(page["url"]).path))
+            score = _page_match(want, page["url"])
             if score > best_score:
                 best, best_score = page, score
         if best and best_score >= 3:
             p["url"], p["link_type"] = best["url"], "product"
+            p["name"] = _slug_name(best["url"]) or p["name"]
             used.add(best["url"])
     extra = [{"name": _slug_name(pg["url"]), "store": pg["store"], "price_inr": None, "url": pg["url"],
               "link_type": "product", "rating": None, "reviews": None, "rating_source": None, "image": None,
@@ -264,7 +291,7 @@ def merge_store_pages(products: list[dict], pages: list[dict]) -> list[dict]:
     for p in real:
         by_store.setdefault(p["store"], []).append(p)
     mixed = [group[i] for i in range(3) for group in by_store.values() if i < len(group)]
-    return (mixed + [p for p in products if p["link_type"] != "product"])[:10]
+    return mixed[:10]   # store searches are never listed: every row opens that exact product
 
 
 async def run_market(product: dict, price_inr: float):
@@ -299,7 +326,7 @@ Give a rating and review count only if the search results show them for that pro
             llm.generate_json([prompt], search=True, temperature=0.2), find_product_pages(query))
         sources = await resolve_sources(raw_sources[:10])
 
-    products = link_products(data.get("products", []), sources)
+    products = link_products(data.get("products", []), sources, strict=not MOCK)
     if not MOCK:
         products = merge_store_pages(products, store_pages)
         products = await add_page_details(products)
@@ -343,7 +370,7 @@ Give a rating and review count only if the search results show them for that pro
         }] if products else None,
         links=sources[:8],
         note=(result["summary"] + " " if result["summary"] else "")
-        + "Found with Gemini and Grounding with Google Search. 'View product' links are pages Google Search returned; "
-          "'Search' links open that store's search for the product.",
+        + "Found with Gemini and Grounding with Google Search. Each link opens the exact product page Google Search "
+          "returned; names, prices and pictures come from that page.",
     )
     return result, ev

@@ -7,7 +7,7 @@
 <meta name="description" content="Your shop's numbers and the rules GoNoGo uses for every verdict.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%23137a4f'/%3E%3Ccircle cx='20' cy='20' r='15.5' fill='none' stroke='white' stroke-opacity='.25' stroke-width='1.4'/%3E%3Cg transform='rotate(40 20 20)'%3E%3Cpath d='M20 6.5L25 20H15Z' fill='white'/%3E%3Cpath d='M15 20H25L20 33.5Z' fill='white' fill-opacity='.4'/%3E%3Ccircle cx='20' cy='20' r='2.3' fill='%23137a4f'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%231d4ed8'/%3E%3Ccircle cx='20' cy='20' r='15.5' fill='none' stroke='white' stroke-opacity='.25' stroke-width='1.4'/%3E%3Cg transform='rotate(40 20 20)'%3E%3Cpath d='M20 6.5L25 20H15Z' fill='white'/%3E%3Cpath d='M15 20H25L20 33.5Z' fill='white' fill-opacity='.4'/%3E%3Ccircle cx='20' cy='20' r='2.3' fill='%231d4ed8'/%3E%3C/g%3E%3C/svg%3E">
 <link rel="stylesheet" href="/static/app.css">
 </head>
 <body>
@@ -25,31 +25,31 @@
           <span class="chips" id="channels"></span>
         </div>
         <div class="source"><span class="hint">Sales history from</span><code id="source">BigQuery</code><span class="hint" id="span"></span></div>
-        <div class="stats" id="stats"></div>
+        <div class="stats" id="stats"><div class="kpi sk-kpi"><span class="sk sk-line" style="width:45%"></span><span class="sk sk-line sk-big" style="width:62%"></span><span class="sk sk-line" style="width:52%"></span></div><div class="kpi sk-kpi"><span class="sk sk-line" style="width:45%"></span><span class="sk sk-line sk-big" style="width:62%"></span><span class="sk sk-line" style="width:52%"></span></div><div class="kpi sk-kpi"><span class="sk sk-line" style="width:45%"></span><span class="sk sk-line sk-big" style="width:62%"></span><span class="sk sk-line" style="width:52%"></span></div><div class="kpi sk-kpi"><span class="sk sk-line" style="width:45%"></span><span class="sk sk-line sk-big" style="width:62%"></span><span class="sk sk-line" style="width:52%"></span></div><div class="kpi sk-kpi"><span class="sk sk-line" style="width:45%"></span><span class="sk sk-line sk-big" style="width:62%"></span><span class="sk sk-line" style="width:52%"></span></div><div class="kpi sk-kpi"><span class="sk sk-line" style="width:45%"></span><span class="sk sk-line sk-big" style="width:62%"></span><span class="sk sk-line" style="width:52%"></span></div></div>
         <p class="note" id="stats-note">Last 12 months, compared with the 12 months before.</p>
       </div>
 
       <div class="panel section" id="budget-panel">
         <div class="section-head"><h2>Experiment budget</h2><span class="hint">What the shop can afford to test, from its own numbers</span></div>
-        <div class="budget-hero" id="budget-hero"><p class="note">Working it out…</p></div>
+        <div class="budget-hero" id="budget-hero"><div class="budget-nums" aria-hidden="true"><div class="kpi sk-kpi"><span class="sk sk-line" style="width:45%"></span><span class="sk sk-line sk-big" style="width:62%"></span><span class="sk sk-line" style="width:52%"></span></div><div class="kpi sk-kpi"><span class="sk sk-line" style="width:45%"></span><span class="sk sk-line sk-big" style="width:62%"></span><span class="sk sk-line" style="width:52%"></span></div></div><span class="sr-only">Loading…</span></div>
         <details class="table-view"><summary class="hint">How it's worked out</summary><div class="tbl-wrap" id="budget-steps"></div></details>
         <p class="note">Every Discovery verdict checks that the new product's opening order and launch cost fit the per-launch budget. Change the share and launches per month in your rules.</p>
       </div>
 
       <div class="panel section">
         <div class="section-head"><h2>Monthly revenue</h2><span class="hint">After returns · last 18 complete months</span></div>
-        <div class="chart" id="chart"><p class="note">Loading…</p></div>
+        <div class="chart" id="chart"><div class="sk sk-chart" aria-hidden="true"></div><span class="sr-only">Loading…</span></div>
         <details class="table-view"><summary class="hint">Show as a table</summary><div class="tbl-wrap" id="chart-table"></div></details>
       </div>
 
       <div class="panel section">
         <div class="section-head"><h2>Categories</h2><span class="hint">Last 12 months · growth vs the 12 months before</span></div>
-        <div class="tbl-wrap" id="categories"><p class="note">Loading…</p></div>
+        <div class="tbl-wrap" id="categories"><div class="sk-table" aria-hidden="true"><div class="sk-row"><span class="sk sk-line" style="width:30%"></span><span class="sk sk-line" style="width:16%"></span><span class="sk sk-line" style="width:10%"></span><span class="sk sk-line" style="width:10%"></span><span class="sk sk-line" style="width:10%"></span><span class="sk sk-line" style="width:10%"></span></div><div class="sk-row"><span class="sk sk-line" style="width:30%"></span><span class="sk sk-line" style="width:16%"></span><span class="sk sk-line" style="width:10%"></span><span class="sk sk-line" style="width:10%"></span><span class="sk sk-line" style="width:10%"></span><span class="sk sk-line" style="width:10%"></span></div><div class="sk-row"><span class="sk sk-line" style="width:30%"></span><span class="sk sk-line" style="width:16%"></span><span class="sk sk-line" style="width:10%"></span><span class="sk sk-line" style="width:10%"></span><span class="sk sk-line" style="width:10%"></span><span class="sk sk-line" style="width:10%"></span></div><div class="sk-row"><span class="sk sk-line" style="width:30%"></span><span class="sk sk-line" style="width:16%"></span><span class="sk sk-line" style="width:10%"></span><span class="sk sk-line" style="width:10%"></span><span class="sk sk-line" style="width:10%"></span><span class="sk sk-line" style="width:10%"></span></div><div class="sk-row"><span class="sk sk-line" style="width:30%"></span><span class="sk sk-line" style="width:16%"></span><span class="sk sk-line" style="width:10%"></span><span class="sk sk-line" style="width:10%"></span><span class="sk sk-line" style="width:10%"></span><span class="sk sk-line" style="width:10%"></span></div><div class="sk-row"><span class="sk sk-line" style="width:30%"></span><span class="sk sk-line" style="width:16%"></span><span class="sk sk-line" style="width:10%"></span><span class="sk sk-line" style="width:10%"></span><span class="sk sk-line" style="width:10%"></span><span class="sk sk-line" style="width:10%"></span></div><div class="sk-row"><span class="sk sk-line" style="width:30%"></span><span class="sk sk-line" style="width:16%"></span><span class="sk sk-line" style="width:10%"></span><span class="sk sk-line" style="width:10%"></span><span class="sk sk-line" style="width:10%"></span><span class="sk sk-line" style="width:10%"></span></div><div class="sk-row"><span class="sk sk-line" style="width:30%"></span><span class="sk sk-line" style="width:16%"></span><span class="sk sk-line" style="width:10%"></span><span class="sk sk-line" style="width:10%"></span><span class="sk sk-line" style="width:10%"></span><span class="sk sk-line" style="width:10%"></span></div></div></div>
       </div>
 
       <div class="panel section">
         <div class="section-head"><h2>Channels</h2><span class="hint">Share of revenue, last 12 months</span></div>
-        <ul class="bar-list" id="channel-list"><li class="note">Loading…</li></ul>
+        <ul class="bar-list" id="channel-list"><li aria-hidden="true"><span class="sk sk-line" style="width:30%"></span><span class="sk sk-bar"></span></li><li aria-hidden="true"><span class="sk sk-line" style="width:30%"></span><span class="sk sk-bar"></span></li><li aria-hidden="true"><span class="sk sk-line" style="width:30%"></span><span class="sk sk-bar"></span></li></ul>
       </div>
 
       <div class="panel section">

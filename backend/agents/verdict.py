@@ -62,7 +62,18 @@ def build_checks(demand, profit, market, a, product=None) -> list[dict]:
             "passed": profit["cash_needed"] <= profit["budget_per_launch"],
         })
     ex = (demand or {}).get("existing")
-    if ex and ex.get("status") in ("dead", "overstock", "reorder", "healthy", "discontinued"):
+    if ex and ex.get("kind") == "style":
+        # the same style in other colours: all of them dead stock = No-go; some dead = a warning
+        colours = ", ".join(v["name"].rpartition(" - ")[2] or v["name"] for v in ex["variants"])
+        checks.append({
+            "id": "existing_stock", "agent": "demand", "hard": ex["status"] == "dead",
+            "label": "The same style isn't sitting unsold in your stock",
+            "value": {"dead": f"{ex['name']} in {colours}: {ex['on_hand']} unsold, no sale in 90 days",
+                      "mixed": f"not selling: {', '.join(ex['dead_names'])}",
+                      "selling": f"{ex['name']} sells in {colours}"}[ex["status"]],
+            "passed": ex["status"] == "selling",
+        })
+    elif ex and ex.get("status") in ("dead", "overstock", "reorder", "healthy", "discontinued"):
         st = ex["status"]
         checks.append({
             "id": "existing_stock", "agent": "demand", "hard": st == "dead",
@@ -162,7 +173,9 @@ describe it that way, never as raw market growth. All sales figures are the shop
   For go or no_go, an empty list.
 - advice: one sentence. For no_go, say what would have to change to make it a go (price, cost, or a
   different product). For go, the one thing to watch after launch.
-If the "existing_stock" check failed, the shop already holds unsold stock of this exact product: lead with that,
+If the "existing_stock" check failed and "existing" has kind "style", the shop already holds the same style in
+other colours and they aren't selling: lead with that (name the colours), and advise selling that stock first
+rather than adding a new colour. Otherwise, if it failed, the shop already holds unsold stock of this exact product: lead with that,
 and advise selling it first (a discount, a bundle or another channel) before buying more. If it shows the product
 is running low, say a reorder is the better move.
 If the "fits_shop" check failed, the product is not something this shop sells, so there are no comparable

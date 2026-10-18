@@ -7,7 +7,7 @@
 <meta name="description" content="What your shop is: the definition GoNoGo judges every new product against.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%23137a4f'/%3E%3Ccircle cx='20' cy='20' r='15.5' fill='none' stroke='white' stroke-opacity='.25' stroke-width='1.4'/%3E%3Cg transform='rotate(40 20 20)'%3E%3Cpath d='M20 6.5L25 20H15Z' fill='white'/%3E%3Cpath d='M15 20H25L20 33.5Z' fill='white' fill-opacity='.4'/%3E%3Ccircle cx='20' cy='20' r='2.3' fill='%23137a4f'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%231d4ed8'/%3E%3Ccircle cx='20' cy='20' r='15.5' fill='none' stroke='white' stroke-opacity='.25' stroke-width='1.4'/%3E%3Cg transform='rotate(40 20 20)'%3E%3Cpath d='M20 6.5L25 20H15Z' fill='white'/%3E%3Cpath d='M15 20H25L20 33.5Z' fill='white' fill-opacity='.4'/%3E%3Ccircle cx='20' cy='20' r='2.3' fill='%231d4ed8'/%3E%3C/g%3E%3C/svg%3E">
 <link rel="stylesheet" href="/static/app.css">
 </head>
 <body>
@@ -66,26 +66,26 @@
     <section class="results" aria-label="What your data says">
       <div class="panel section">
         <div class="section-head"><h2>What your data says</h2><span class="hint">From BigQuery</span></div>
-        <div class="stats" id="facts"></div>
+        <div class="stats" id="facts"><div class="sk-facts" aria-hidden="true" style="display:contents"><div class="kpi sk-kpi"><span class="sk sk-line" style="width:45%"></span><span class="sk sk-line sk-big" style="width:62%"></span><span class="sk sk-line" style="width:52%"></span></div><div class="kpi sk-kpi"><span class="sk sk-line" style="width:45%"></span><span class="sk sk-line sk-big" style="width:62%"></span><span class="sk sk-line" style="width:52%"></span></div><div class="kpi sk-kpi"><span class="sk sk-line" style="width:45%"></span><span class="sk sk-line sk-big" style="width:62%"></span><span class="sk sk-line" style="width:52%"></span></div><div class="kpi sk-kpi"><span class="sk sk-line" style="width:45%"></span><span class="sk sk-line sk-big" style="width:62%"></span><span class="sk sk-line" style="width:52%"></span></div><div class="kpi sk-kpi"><span class="sk sk-line" style="width:45%"></span><span class="sk sk-line sk-big" style="width:62%"></span><span class="sk sk-line" style="width:52%"></span></div><div class="kpi sk-kpi"><span class="sk sk-line" style="width:45%"></span><span class="sk sk-line sk-big" style="width:62%"></span><span class="sk sk-line" style="width:52%"></span></div></div></div>
         <div id="channels" class="chips"></div>
       </div>
       <div class="panel section" id="budget-panel">
         <div class="section-head"><h2>Experiment budget</h2><span class="hint">What you can afford to test, from your own numbers</span></div>
-        <div class="budget-hero" id="budget-hero"><p class="note">Working it out…</p></div>
+        <div class="budget-hero" id="budget-hero"><div class="budget-nums" aria-hidden="true"><div class="kpi sk-kpi"><span class="sk sk-line" style="width:45%"></span><span class="sk sk-line sk-big" style="width:62%"></span><span class="sk sk-line" style="width:52%"></span></div><div class="kpi sk-kpi"><span class="sk sk-line" style="width:45%"></span><span class="sk sk-line sk-big" style="width:62%"></span><span class="sk sk-line" style="width:52%"></span></div></div><span class="sr-only">Loading…</span></div>
         <h3 class="budget-sub">How it's worked out</h3>
-        <div class="tbl-wrap" id="budget-steps"></div>
+        <div class="tbl-wrap" id="budget-steps"><div class="sk-table" aria-hidden="true"><div class="sk-row"><span class="sk sk-line" style="width:55%"></span><span class="sk sk-line" style="width:25%"></span></div><div class="sk-row"><span class="sk sk-line" style="width:55%"></span><span class="sk sk-line" style="width:25%"></span></div><div class="sk-row"><span class="sk sk-line" style="width:55%"></span><span class="sk sk-line" style="width:25%"></span></div><div class="sk-row"><span class="sk sk-line" style="width:55%"></span><span class="sk sk-line" style="width:25%"></span></div><div class="sk-row"><span class="sk sk-line" style="width:55%"></span><span class="sk sk-line" style="width:25%"></span></div><div class="sk-row"><span class="sk sk-line" style="width:55%"></span><span class="sk sk-line" style="width:25%"></span></div></div></div>
         <div class="bands" id="budget-bands"></div>
         <p class="note">Every new product's first order plus launch cost must fit the per-launch budget, or the verdict is No-go.
           Change the share of profit and launches per month in <a href="/business">your rules</a>.</p>
       </div>
       <div class="panel section">
         <div class="section-head"><h2>What you sell</h2><span class="hint" id="cat-count"></span></div>
-        <div class="tbl-wrap" id="cats"><p class="note">Loading…</p></div>
+        <div class="tbl-wrap" id="cats"><div class="sk-table" aria-hidden="true"><div class="sk-row"><span class="sk sk-line" style="width:34%"></span><span class="sk sk-line" style="width:16%"></span><span class="sk sk-line" style="width:12%"></span><span class="sk sk-line" style="width:26%"></span></div><div class="sk-row"><span class="sk sk-line" style="width:34%"></span><span class="sk sk-line" style="width:16%"></span><span class="sk sk-line" style="width:12%"></span><span class="sk sk-line" style="width:26%"></span></div><div class="sk-row"><span class="sk sk-line" style="width:34%"></span><span class="sk sk-line" style="width:16%"></span><span class="sk sk-line" style="width:12%"></span><span class="sk sk-line" style="width:26%"></span></div><div class="sk-row"><span class="sk sk-line" style="width:34%"></span><span class="sk sk-line" style="width:16%"></span><span class="sk sk-line" style="width:12%"></span><span class="sk sk-line" style="width:26%"></span></div><div class="sk-row"><span class="sk sk-line" style="width:34%"></span><span class="sk sk-line" style="width:16%"></span><span class="sk sk-line" style="width:12%"></span><span class="sk sk-line" style="width:26%"></span></div><div class="sk-row"><span class="sk sk-line" style="width:34%"></span><span class="sk sk-line" style="width:16%"></span><span class="sk sk-line" style="width:12%"></span><span class="sk sk-line" style="width:26%"></span></div><div class="sk-row"><span class="sk sk-line" style="width:34%"></span><span class="sk sk-line" style="width:16%"></span><span class="sk sk-line" style="width:12%"></span><span class="sk sk-line" style="width:26%"></span></div><div class="sk-row"><span class="sk sk-line" style="width:34%"></span><span class="sk sk-line" style="width:16%"></span><span class="sk sk-line" style="width:12%"></span><span class="sk sk-line" style="width:26%"></span></div></div></div>
         <p class="note">Categories come from your active products. A new product must fit one of them, or it's a No-go.</p>
       </div>
       <div class="panel section">
         <div class="section-head"><h2>What the agents read</h2><span class="hint">Updates when you save</span></div>
-        <pre class="brief" id="brief">Loading…</pre>
+        <pre class="brief" id="brief"><span class="sk-lines" aria-hidden="true"><span class="sk sk-line" style="width:92%"></span><span class="sk sk-line" style="width:78%"></span><span class="sk sk-line" style="width:85%"></span><span class="sk sk-line" style="width:64%"></span><span class="sk sk-line" style="width:88%"></span><span class="sk sk-line" style="width:70%"></span></span><span class="sr-only">Loading…</span></pre>
       </div>
     </section>
   </div>
@@ -172,6 +172,7 @@ $("profile-form").addEventListener("input", () => setStatus(""));
 // --- facts from the shop's own data ---
 const json = (url) => fetch(url).then(r => r.ok ? r.json() : Promise.reject(r));
 json("/api/categories").then(rows => {
+  document.querySelector(".sk-facts")?.remove();
   const prices = rows.flatMap(r => [r.min_price_inr, r.max_price_inr]).filter(v => v != null);
   $("cat-count").textContent = `${rows.length} categories`;
   $("cats").innerHTML = `<table><thead><tr><th>Category</th><th>Dept</th><th class="n">Products</th><th class="n">Price range</th></tr></thead><tbody>${
@@ -183,6 +184,7 @@ json("/api/categories").then(rows => {
 }).catch(() => { $("cats").innerHTML = `<p class="note">Couldn't read the categories from BigQuery.</p>`; });
 
 Promise.all([json("/api/business"), json("/api/pages/customers")]).then(([b, c]) => {
+  document.querySelector(".sk-facts")?.remove();
   const ages = (c.tables.find(t => t.id === "ages") || {rows: []}).rows;
   const cities = (c.tables.find(t => t.id === "cities") || {rows: []}).rows;
   const topAge = [...ages].sort((x, y) => y.revenue - x.revenue)[0];

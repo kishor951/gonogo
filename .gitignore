@@ -1,12 +1,30 @@
+# Python
 __pycache__/
 *.pyc
 .venv/
 venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# secrets: never commit keys, env files or the access code
 .env
-# never commit Google Cloud keys
+.env.*
+!.env.example
 *.json
 !package.json
-.DS_Store
+*.pem
+*.key
+*.p12
 
-# generated demo data (python scripts/generate_shop_data.py)
+# local tools and logs
+.DS_Store
+.vscode/
+.idea/
+*.log
+
+# generated demo data (python scripts/generate_shop_data.py); it lives in BigQuery
 scripts/data/
+
+# source art for the SOP character; the cut poses are in backend/static/sop/
+/character_style_spritesheet.png

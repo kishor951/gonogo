@@ -7,7 +7,7 @@
 <meta name="description" content="Know if a product will sell before you stock it.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%23137a4f'/%3E%3Ccircle cx='20' cy='20' r='15.5' fill='none' stroke='white' stroke-opacity='.25' stroke-width='1.4'/%3E%3Cg transform='rotate(40 20 20)'%3E%3Cpath d='M20 6.5L25 20H15Z' fill='white'/%3E%3Cpath d='M15 20H25L20 33.5Z' fill='white' fill-opacity='.4'/%3E%3Ccircle cx='20' cy='20' r='2.3' fill='%23137a4f'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%231d4ed8'/%3E%3Ccircle cx='20' cy='20' r='15.5' fill='none' stroke='white' stroke-opacity='.25' stroke-width='1.4'/%3E%3Cg transform='rotate(40 20 20)'%3E%3Cpath d='M20 6.5L25 20H15Z' fill='white'/%3E%3Cpath d='M15 20H25L20 33.5Z' fill='white' fill-opacity='.4'/%3E%3Ccircle cx='20' cy='20' r='2.3' fill='%231d4ed8'/%3E%3C/g%3E%3C/svg%3E">
 <link rel="stylesheet" href="/static/app.css">
 </head>
 <body>
@@ -18,14 +18,8 @@
    <div class="chat">
     <div class="hero" id="hero">
       <div class="buddy" id="buddy"></div>
-      <h1 class="hero-title" id="greeting">Hello!</h1>
-      <p class="hero-sub">I'm <b>GoNoGo</b>, your buying buddy. What are you thinking of stocking?
-        Show me a photo or tell me about it, plus what it costs you, and I'll check with the team whether it's worth buying.</p>
-      <div class="starters">
-        <label class="starter" for="photo"><span aria-hidden="true">📷</span> Check a photo</label>
-        <button type="button" class="starter" data-example="0"><span aria-hidden="true">✦</span> Should I stock active leggings?</button>
-        <button type="button" class="starter" data-example="1"><span aria-hidden="true">✦</span> Is a wool overcoat worth it?</button>
-      </div>
+      <h1 class="hero-title" id="greeting">Should you stock it?</h1>
+      <p class="hero-sub">Add a product and its purchase price. Get a Go or No-go from your sales, stock and the market.</p>
     </div>
 
     <div class="thread" id="thread" aria-live="polite"></div>
@@ -38,15 +32,15 @@
         <button type="button" class="cmp-x" id="photo-remove" aria-label="Remove photo">×</button>
       </div>
       <div class="detect" id="detect" role="status" hidden></div>
-      <textarea id="name" rows="1" maxlength="120" aria-label="Product" placeholder="Tell GoNoGo what you want to stock, or add or paste a photo…"></textarea>
+      <textarea id="name" rows="1" maxlength="120" aria-label="Product" placeholder="Product name or description, or paste a photo…"></textarea>
       <div class="cmp-bar">
         <input type="file" id="photo" accept="image/*" class="sr-only">
         <label class="cmp-btn" for="photo" title="Add a photo">
           <svg viewBox="0 0 24 24" width="19" height="19" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4zM12 17a4 4 0 100-8 4 4 0 000 8z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
           <span>Photo</span>
         </label>
-        <label class="cmp-field"><span>Cost ₹</span><input type="number" id="cost" min="1" step="1" inputmode="numeric" placeholder="450" aria-label="Your cost price in rupees"></label>
-        <label class="cmp-field"><span>Price ₹</span><input type="number" id="price" min="1" step="1" inputmode="numeric" placeholder="auto" aria-label="Selling price in rupees"></label>
+        <label class="cmp-field"><span><span class="lbl-long">Purchase at</span><span class="lbl-short">Buy</span> ₹</span><input type="number" id="cost" min="1" step="1" inputmode="numeric" placeholder="450" aria-label="Purchase price per piece, in rupees"></label>
+        <label class="cmp-field"><span><span class="lbl-long">Selling at</span><span class="lbl-short">Sell</span> ₹</span><input type="number" id="price" min="1" step="1" inputmode="numeric" placeholder="auto" aria-label="Selling price per piece, in rupees"></label>
         <button class="cmp-go" id="submit" type="submit" aria-label="Get the verdict" title="Get the verdict">
           <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
@@ -63,9 +57,14 @@
     </div>
    </div>
 
+   <div class="top-actions">
+   <button type="button" class="refs-toggle sop-toggle" id="sop-open" title="SOP: how to use GoNoGo, step by step">
+     <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path d="M3.5 5.5h7a2 2 0 012 2v12a2 2 0 00-2-2h-7zM20.5 5.5h-7a2 2 0 00-2 2v12a2 2 0 012-2h7z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+     SOP<span class="new-dot" id="sop-dot" hidden></span></button>
    <button type="button" class="refs-toggle" id="refs-toggle" hidden aria-controls="refs" aria-expanded="false">
      <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path d="M6 3.5h9l3.5 3.5v13.5H6zM14.5 3.5V7.5h4M9 12h6.5M9 15.5h6.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
      References<span class="new-dot" hidden></span></button>
+   </div>
    <aside class="refs" id="refs" aria-labelledby="refs-title" aria-hidden="true">
      <div class="refs-head"><div><h2 id="refs-title">References</h2><span class="hint" id="refs-for"></span></div>
        <button type="button" class="refs-x" id="refs-close" aria-label="Close references">×</button></div>
@@ -99,6 +98,18 @@
         </div>
       <div class="modal-foot"><button class="btn" value="done">Done</button></div>
     </form>
+  </dialog>
+
+  <dialog class="modal sop" id="sop-modal" aria-labelledby="sop-title" aria-roledescription="slides">
+    <div class="modal-card">
+      <div class="modal-head"><h2 id="sop-title">GoNoGo, step by step</h2><button type="button" class="modal-x" aria-label="Close" onclick="$('sop-modal').close()">×</button></div>
+      <div class="sop-stage" id="sop-stage" aria-live="polite"></div>
+      <div class="sop-nav">
+        <button type="button" class="btn ghost" id="sop-prev">← Back</button>
+        <div class="sop-dots" id="sop-dots" role="tablist" aria-label="Slides"></div>
+        <button type="button" class="btn" id="sop-next">Next →</button>
+      </div>
+    </div>
   </dialog>
 
   <dialog class="modal" id="rules-modal" aria-labelledby="rules-title">
@@ -239,7 +250,8 @@ function usePhoto(file) {
 }
 async function readPhoto() {
   const sent = photoData;
-  showDetect(`<span class="reading"><span class="dot working"></span>Looking for products in your photo…</span>`);
+  showDetect(`<span class="reading"><span class="dot working"></span>Looking for products in your photo…</span>
+    <div class="found-list" aria-hidden="true">${'<div class="found sk-found"><span class="sk sk-dot"></span><span class="found-text"><span class="sk sk-line" style="width:60%"></span><span class="sk sk-line" style="width:38%"></span></span></div>'.repeat(2)}</div>`);
   try {
     const res = await fetch("/api/autofill", {method: "POST", headers: {"Content-Type": "application/json"},
       body: JSON.stringify({image: sent, hint: $("description").value.trim()})});
@@ -363,7 +375,7 @@ $("form").addEventListener("submit", async (e) => {
   e.preventDefault();
   if (running) { running.abort(); return; }   // the button is "Stop" while the team works
   const name = $("name").value.trim(), cost = parseFloat($("cost").value);
-  if (!(cost > 0)) { composerHint("Enter your cost price (what you pay per piece) to get a verdict."); $("cost").focus(); return; }
+  if (!(cost > 0)) { composerHint("Enter the price you'll purchase it at (per piece) to get a verdict."); $("cost").focus(); return; }
   if (name.length < 2) {
     $("name").focus();
     composerHint(photoData ? "Wait for the photo to be read, or describe the product." : "Add a photo, or describe the product.");
@@ -383,7 +395,7 @@ function userBubble(body, i) {
   const pic = body.image || body.thumb;
   return `<div class="msg user">
     ${pic ? `<img src="${pic}" alt="">` : ""}
-    <div><b>${esc(body.name)}</b><small>Cost ${inr(body.cost)} · ${body.price ? "price " + inr(body.price) : "price: suggest one"}</small></div>
+    <div><b>${esc(body.name)}</b><small>Purchase at ${inr(body.cost)} · ${body.price ? "selling at " + inr(body.price) : "selling price: suggest one"}</small></div>
     <button type="button" class="edit-btn" onclick="editQuestion(${i})" aria-label="Edit this question">
       <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M4 20h4l10-10-4-4L4 16zM13 7l4 4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></svg>Edit</button></div>`;
 }
@@ -489,12 +501,8 @@ $("jump").addEventListener("click", () => window.scrollTo({top: document.scrolli
 // Close the References panel (it comes back with the next answer, or the References button).
 $("refs-close").addEventListener("click", closeRefs);
 
-// A greeting, like a chat app: by time of day, with the shop's name.
-function greet() {
-  const h = new Date().getHours();
-  const part = h < 5 ? "Good evening" : h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
-  $("greeting").textContent = `${part}${org.shop_name ? ", " + org.shop_name : ""}!`;
-}
+// The headline speaks to the seller directly.
+function greet() { $("greeting").textContent = "Should you stock it?"; }
 greet();
 $("buddy").innerHTML = gogoHTML(72);
 
@@ -508,7 +516,7 @@ function saveConversation() {
   // name and dot both describe the latest question in the conversation
   const conv = {id: convId, title: last.body.name + (answers.length > 1 ? ` (+${answers.length - 1})` : ""),
                 verdict: last.data.verdict, updated: Date.now(), turns};
-  let list = [conv, ...loadHistory().filter(c => c.id !== convId)].slice(0, 12);
+  let list = [conv, ...loadHistory().filter(c => c.id !== convId)].slice(0, 30);
   for (;;) {   // if the browser is full, drop the oldest checks
     try { localStorage.setItem(HISTORY_KEY, JSON.stringify(list)); break; }
     catch (e) { if (list.length <= 1) break; list = list.slice(0, -1); }
@@ -760,6 +768,68 @@ function closeRefs() {
 }
 $("refs-toggle").addEventListener("click", () => $("refs").classList.contains("open") ? closeRefs() : openRefs());
 addEventListener("keydown", (e) => { if (e.key === "Escape" && $("refs").classList.contains("open")) closeRefs(); });
+
+// --- SOP: how to use GoNoGo, as a few simple slides ---
+const SOP_ICON = (d) => `<span class="sop-icon"><svg viewBox="0 0 24 24" width="34" height="34" aria-hidden="true"><path d="${d}" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>`;
+// Priya, the shop owner in the story (poses cut from character_style_spritesheet.png into /static/sop/).
+const PRIYA = (pose, size = 120) => `<img class="priya" src="/static/sop/priya-${pose}.png" width="${size}" height="${size}" alt="">`;
+const SOP_SLIDES = [
+  // the story: why GoNoGo exists
+  {kicker: "Why GoNoGo", art: () => PRIYA("phone"),
+   title: "Meet Priya", text: "She runs a small fashion shop. A supplier calls about a new kurta: \u201cHow many will you take?\u201d"},
+  {kicker: "Why GoNoGo", art: () => PRIYA("curious"),
+   title: "Today, it's a guess", text: "She has to decide on the spot, on gut feel. Either way, a wrong call costs her.",
+   extra: () => `<div class="sop-risks"><div class="risk no">${PRIYA("sad", 52)}<div><b>She buys, it doesn't sell</b><span>Her cash is stuck in stock on the shelf.</span></div></div>
+     <div class="risk cond">${PRIYA("sigh", 52)}<div><b>She says no, it would have sold</b><span>A competitor gets those sales.</span></div></div></div>`},
+  {kicker: "Why GoNoGo", art: () => PRIYA("notes"),
+   title: "The answer is already there", text: "In her own sales, her stock, her customers and the prices online. But checking all of it by hand takes days."},
+  {kicker: "Why GoNoGo", art: () => `<div class="sop-duo">${PRIYA("happy")}${gogoHTML(52)}</div>`, title: "GoNoGo checks it in a minute",
+   text: "A photo and a price is all it needs. It gives a clear answer, with the reasons and the proof.",
+   extra: () => `<div class="sop-chips"><span class="check-verdict v-go">Go</span><span class="check-verdict v-go_with_conditions">Go with conditions</span><span class="check-verdict v-no_go">No-go</span></div>`},
+  // how to use it
+  {art: () => SOP_ICON("M4 8h3l2-3h6l2 3h3v11H4zM12 17a4 4 0 100-8 4 4 0 000 8z"), title: "1. Add the product",
+   text: "Type its name, or tap Photo (you can also paste a picture). If the photo shows several products, pick the number you mean."},
+  {art: () => SOP_ICON("M12 2v20M17 6H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"), title: "2. Enter the prices",
+   text: "Purchase at: what you pay for one piece. Selling at: your price. Not sure? Leave it and GoNoGo suggests one. Then press the arrow."},
+  {art: () => `<div class="sop-team">${AGENT_ORDER.map(avatarHTML).join("")}</div>`, title: "3. The team checks it",
+   text: "Six AI agents work at once: what the product is, prices online, your own sales, who buys it, the money, and the final call. About a minute."},
+  {art: () => SOP_ICON("M9 12l2 2 4-4M12 3a9 9 0 100 18 9 9 0 000-18z"), title: "4. Read the answer",
+   text: "You get the verdict, how many to order first, the cash you need, and three plain reasons. Your rules decide; the AI only explains."},
+  {art: () => SOP_ICON("M6 3.5h9l3.5 3.5v13.5H6zM14.5 3.5V7.5h4M9 12h6.5M9 15.5h6.5"), title: "5. Check the proof",
+   text: "Open References for the facts behind the answer: similar products online (each link opens that product), every rule check and your sales."},
+  {art: () => SOP_ICON("M4 21V14M4 10V3M12 21V12M12 8V3M20 21V16M20 12V3M1 14h6M9 8h6M17 16h6"), title: "6. Make it yours",
+   text: "Set your margin, break-even and test budget on the Business page, and what you sell on Shop profile. Past checks stay under Recent checks."},
+];
+let sopAt = 0;
+function sopShow(i) {
+  sopAt = Math.max(0, Math.min(SOP_SLIDES.length - 1, i));
+  const sl = SOP_SLIDES[sopAt];
+  $("sop-stage").innerHTML = `<div class="sop-slide" role="group" aria-label="Slide ${sopAt + 1} of ${SOP_SLIDES.length}">
+    <span class="sop-kicker">${sl.kicker || "How to use it"}</span><div class="sop-art">${sl.art()}</div><h3>${esc(sl.title)}</h3><p>${esc(sl.text)}</p>${sl.extra ? sl.extra() : ""}</div>`;
+  $("sop-dots").innerHTML = SOP_SLIDES.map((_, k) => `<button type="button" role="tab" aria-selected="${k === sopAt}" aria-label="Slide ${k + 1}" data-k="${k}"></button>`).join("");
+  $("sop-prev").style.visibility = sopAt ? "visible" : "hidden";
+  $("sop-next").textContent = sopAt === SOP_SLIDES.length - 1 ? "Start a check" : "Next →";
+}
+function openSop() {
+  sopShow(0);
+  $("sop-modal").showModal();
+  $("sop-dot").hidden = true;
+  try { localStorage.setItem("gonogo.sop.seen", "1"); } catch (e) {}
+}
+document.body.appendChild(document.querySelector(".top-actions"));   // above the phone top bar (outside the page's stacking)
+$("sop-open").addEventListener("click", openSop);
+$("sop-prev").addEventListener("click", () => sopShow(sopAt - 1));
+$("sop-next").addEventListener("click", () => {
+  if (sopAt < SOP_SLIDES.length - 1) return sopShow(sopAt + 1);
+  $("sop-modal").close(); $("name").focus();
+});
+$("sop-dots").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) sopShow(+b.dataset.k); });
+$("sop-modal").addEventListener("keydown", (e) => {
+  if (e.key === "ArrowRight") sopShow(sopAt + 1);
+  if (e.key === "ArrowLeft") sopShow(sopAt - 1);
+});
+$("sop-modal").addEventListener("click", (e) => { if (e.target === $("sop-modal")) $("sop-modal").close(); });
+try { if (!localStorage.getItem("gonogo.sop.seen")) $("sop-dot").hidden = false; } catch (e) {}
 
 function showRefs(idx, open) {
   const {data: d, body} = answers[idx];

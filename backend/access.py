@@ -13,6 +13,7 @@ from fastapi import Request
 from fastapi.responses import JSONResponse, RedirectResponse
 
 from config import ACCESS_CODE
+from limits import client_ip
 
 COOKIE = "gonogo_access"
 MAX_AGE = 30 * 24 * 3600
@@ -49,7 +50,7 @@ def too_many_tries(ip: str) -> bool:
 
 
 def check_code(request: Request, code: str) -> JSONResponse:
-    ip = (request.headers.get("x-forwarded-for") or (request.client.host if request.client else "?")).split(",")[0].strip()
+    ip = client_ip(request)
     if too_many_tries(ip):
         return JSONResponse({"detail": "Too many wrong tries. Wait 10 minutes and try again."}, status_code=429)
     if not ACCESS_CODE or hmac.compare_digest(code.strip(), ACCESS_CODE):

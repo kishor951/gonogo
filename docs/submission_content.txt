@@ -1,0 +1,341 @@
+GONOGO - SUBMISSION DECK CONTENT
+Google Cloud AI Builder Cup 2026 - Retail & Commerce
+====================================================================
+
+
+PAGE 1 - TEAM DETAILS
+--------------------------------------------------------------------
+Team name:          GoNoGo
+Team leader name:   Kishor H K
+Problem statement:  Retail & Commerce: Intelligent Customer and Business Experiences
+
+
+PAGE 2 - BRIEF ABOUT THE IDEA
+--------------------------------------------------------------------
+GoNoGo: know if a product will sell before you stock it.
+
+Small and mid-size retailers launch new products on gut feel. A bad buy
+ties up cash in stock that doesn't move. A missed good one goes to a
+competitor.
+
+GoNoGo is an AI launch-decision agent. A seller snaps a photo of a product
+they're thinking of stocking and enters the cost price. A crew of
+specialist AI agents then checks the idea against:
+  - the shop's own data in BigQuery: sales history, similar products,
+    inventory, customers, budget
+  - the live market: Gemini with Google Search, looking at real product
+    pages on Myntra, Flipkart, Ajio and Amazon.in
+
+In under a minute, the seller gets Go, No-go or Go with conditions, with
+three plain-language reasons. Each reason opens to the numbers or web
+pages behind it.
+
+Our core principle: Gemini understands, searches and explains. Every
+number comes from SQL or Python, and the verdict comes from the seller's
+own rules checked in code. The AI can't invent a figure or change the
+decision.
+
+
+PAGE 3 - OPPORTUNITIES
+--------------------------------------------------------------------
+How is it different from existing ideas?
+  - Most retail AI tools are dashboards (they show the past) or demand
+    forecasters (one number, no reasons). GoNoGo makes a decision and
+    backs every reason with evidence you can click.
+  - Generic chatbots guess numbers. In GoNoGo, every figure is calculated
+    from the shop's own data, and the verdict is set by rules in code, so
+    it's consistent and auditable.
+  - It judges a product against this shop: its customers, brand, what it
+    never sells, its stock and its budget. It doesn't judge against "the
+    market in general".
+  - Competitor links are real product pages that Google Search returned,
+    not made-up URLs.
+
+How does it solve the problem?
+  - It turns a week of spreadsheet work and marketplace browsing into one
+    question that takes about a minute.
+  - It stops cash going into slow sellers: comparable products' sales
+    speed, margin after fees, shipping and returns, and break-even are all
+    checked before buying.
+  - It protects the brand: a product that doesn't fit (e.g. a brass puja
+    diya in a fashion shop) is always a No-go.
+  - It keeps experiments affordable: an experiment budget comes from the
+    shop's own profit run-rate, and each launch must fit inside it.
+
+USP of the proposed solution
+  1. A verdict with evidence, not a chart: every reason links to its data.
+  2. Numbers by code, words by AI: no hallucinated figures.
+  3. The seller's rules, enforced: margin, break-even, sales speed and
+     budget are set on the Business page and saved in BigQuery.
+  4. Photo-first: snap a product, and GoNoGo finds it, crops it and
+     suggests a selling price from the shop's own similar products.
+  5. A visible agent crew (Iris, Scout, Ledger, Echo, Penny, Vera) that
+     streams its work live, so the seller sees how the decision was made.
+
+
+PAGE 4 - LIST OF FEATURES
+--------------------------------------------------------------------
+Discovery (the launch check)
+  - Start from a photo: Gemini Vision finds every product in the image,
+    draws numbered boxes and checks each one for fit with the shop. Pick
+    one and it's cropped and evaluated.
+  - Suggested selling price from the shop's comparable products (SQL).
+  - Chat-style interface: answers stream in live, one line per agent. You
+    can stop a run mid-way, and copy or retry an answer.
+  - Verdict: Go / No-go / Go with conditions, key numbers (margin,
+    expected units per month, break-even weeks, opening order, cash
+    needed) and three reasons.
+  - References panel: similar products in the shop with their sales, rule
+    checks (pass/fail), sales chart, and each agent's evidence.
+  - Similar products online: real Myntra / Flipkart / Ajio / Amazon.in
+    pages, each with its title, price, picture and rating read from the
+    page itself.
+  - Recent checks saved in the browser and reopenable from the sidebar.
+
+The agent crew
+  Iris  (Product) - What is it? Does it fit the shop?
+                    Gemini + photo + shop profile + catalogue match
+  Scout (Market)  - Online prices and competitors
+                    Gemini + Google Search grounding
+  Ledger (Demand) - How fast similar products sell, trend, returns
+                    BigQuery
+  Echo  (Fit)     - Who buys it, and what they buy with it
+                    BigQuery basket + buyer analysis
+  Penny (Profit)  - Margin, break-even, opening order, budget
+                    Python
+  Vera  (Verdict) - Applies the rules, explains the result
+                    Rules in code + Gemini explanation
+
+Rules checked
+  Hard: fits the shop, minimum margin, maximum break-even, minimum sales
+        speed, experiment budget, no dead stock in the same line
+  Soft: sales speed near average, category trend, price vs market
+
+Shop pages
+  - Business: 12-month KPIs vs the previous 12 (revenue, units, margin,
+    orders, AOV, return rate), monthly revenue, category performance,
+    channel split, experiment budget, editable rules.
+  - Shop profile: who the shop is, its customers, positioning, style and
+    what it never sells. The agents judge against this.
+  - Products, Inventory, Sales, Returns, Customers, Suppliers: searchable,
+    sortable tables. Inventory flags Reorder, Overstock (more than 120
+    days of cover) and Dead stock (no sale in 90 days).
+
+Platform
+  - Access-code gate for the live demo, mock mode for running offline,
+    one failed agent never crashes a request, works at phone width and in
+    dark mode.
+
+
+PAGE 5 - PROCESS FLOW DIAGRAM
+--------------------------------------------------------------------
+Seller: photo + cost price (or a text description)
+        |
+        v
+Autofill (Gemini Vision) -> finds products, boxes, fit,
+                            suggested price (SQL)
+        |  seller picks one / edits
+        v
+Iris - Product agent -> category + "does it fit this shop?"
+        |
+        +-- doesn't fit -> NO-GO (other agents skipped)
+        |
+        v  fits - run in parallel
++-----------------+------------------+------------------+
+| Scout - Market  | Ledger - Demand  | Echo - Fit       |
+| Google Search   | BigQuery sales   | BigQuery baskets |
++--------+--------+--------+---------+--------+---------+
+         +-----------------+------------------+
+                           v
+        Penny - Profit (Python): margin, break-even,
+        opening stock, cash, budget
+                           v
+        Vera - Verdict: rule checks in code
+        -> GO / NO-GO / GO WITH CONDITIONS
+        Gemini writes headline + 3 reasons (can't change the verdict)
+                           v
+        Chat answer + References panel (evidence, links, checks)
+
+Use cases:
+  1. A buyer checks a new product before ordering.
+  2. The owner sets rules and budget on the Business page.
+  3. The owner reviews stock problems on the Inventory page.
+
+
+PAGE 6 - WIREFRAMES / MOCK DIAGRAMS (OPTIONAL)
+--------------------------------------------------------------------
+Use screenshots of:
+  - the empty Discovery page (GoNoGo greeting, composer with Photo /
+    Cost / Price)
+  - the photo with numbered boxes and the pick list
+  - the answer with the References panel
+
+Caption: "One search-style column. Ask, watch the crew work, get a
+verdict. Evidence sits on the right."
+
+
+PAGE 7 - ARCHITECTURE DIAGRAM
+--------------------------------------------------------------------
+Browser (HTML + CSS + JS, no build step)
+   |  HTTPS, NDJSON streaming
+   v
+Cloud Run (asia-south1) - one FastAPI service: pages + /api/*
+   |  access gate (HMAC cookie)
+   |
+   +-- Orchestrator (asyncio) - runs agents, streams
+   |   start/done/failed per agent
+   |     +-- Product, Market, Verdict, Autofill
+   |     |      -> Vertex AI Gemini 2.5 Flash (us-central1)
+   |     |         + Grounding with Google Search
+   |     +-- Market -> reads the store pages Search returned
+   |     |             (JSON-LD price, og:image)
+   |     +-- Demand, Fit, Budget, Pages
+   |     |      -> BigQuery (gonogo_shop, asia-south1),
+   |     |         parameterised SQL files
+   |     +-- Profit, rule checks -> pure Python
+   |
+   +-- Settings (rules + shop profile) <-> BigQuery settings table
+
+Auth: Application Default Credentials (Cloud Run service account),
+      no keys in code
+Build/deploy: gcloud run deploy --source -> Cloud Build ->
+              Artifact Registry -> Cloud Run
+
+
+PAGE 8 - TECHNOLOGIES TO BE USED IN THE SOLUTION
+--------------------------------------------------------------------
+  - AI: Gemini 2.5 Flash on Vertex AI (google-genai SDK): vision,
+    structured JSON output, explanations
+  - Grounding with Google Search: live market prices and competitor
+    product pages
+  - Data: BigQuery: sales, products, inventory, customers, suppliers,
+    settings
+  - Backend: Python 3.11, FastAPI, asyncio, Pydantic, Uvicorn
+  - Hosting: Cloud Run, Cloud Build, Artifact Registry
+  - Security: IAM service account with least-privilege roles,
+    Application Default Credentials, access-code gate
+  - Frontend: plain HTML, CSS and JavaScript, streaming (NDJSON), inline
+    SVG charts, light/dark theme
+  - Demo data: Python generator for the synthetic shop "Urban Loom":
+    180 products, 6,000 customers, ~53,000 order lines over 24 months
+
+
+PAGE 9 - ESTIMATED IMPLEMENTATION COST (OPTIONAL)
+--------------------------------------------------------------------
+  Cloud Run (max 2 instances, scales to zero)
+      Within free tier at demo traffic
+  BigQuery (small dataset, a few MB)
+      Within free tier (1 TB of queries per month)
+  Gemini 2.5 Flash tokens
+      About Rs 1-2 per launch check
+  Grounding with Google Search (5 grounded searches per check)
+      Free up to the daily quota; beyond it, roughly Rs 15 per check
+  Per check, all-in
+      Roughly Rs 2-17, depending on search volume
+
+For a shop checking 50 products a month, that's well under Rs 1,000 a
+month, which is small next to one bad stock order (Rs 20,000 to
+Rs 5,00,000).
+
+(These are estimates from public list prices. Check them against current
+Vertex AI pricing before you submit.)
+
+
+PAGE 10 - SNAPSHOTS OF THE PROTOTYPE
+--------------------------------------------------------------------
+Suggested screenshots, in this order:
+  1. Discovery: the empty page with the GoNoGo greeting
+  2. A photo with numbered product boxes and the pick list
+  3. The agent crew streaming live
+  4. GO verdict: high-waist active leggings, Rs 1,299
+  5. NO-GO verdict: wool overcoat (slow seller, low margin)
+  6. NO-GO: brass puja diya (doesn't fit the shop)
+  7. References panel: similar products online with real store links
+  8. Business page: KPIs, rules and experiment budget
+  9. Inventory page: Reorder / Overstock / Dead stock
+
+
+PAGE 11 - PROTOTYPE PERFORMANCE REPORT / BENCHMARKING
+--------------------------------------------------------------------
+Measured on 18 Oct 2026 on live Gemini and BigQuery with test_local.py.
+
+Test case 1: High-waist active leggings, cost Rs 450, price Rs 1,299
+  Verdict:    GO
+  Total time: 56.5 s
+  Why:        Similar products sell 1.58x the shop average, 44.6%
+              margin, break-even in 3 weeks
+
+Test case 2: Wool overcoat, cost Rs 6,500, price Rs 8,999
+  Verdict:    NO-GO
+  Total time: 44.5 s
+  Why:        Sells at 0.07x average (limit 0.7x), 11.7% margin
+              (minimum 20%), break-even 36 weeks (limit 12)
+
+Test case 3: Brass puja diya, forced into "T-Shirts"
+  Verdict:    NO-GO
+  Total time: 20.2 s
+  Why:        Product agent caught that it's outside the shop's range;
+              the other agents were skipped
+
+Time per agent (leggings run):
+  Product (Gemini) ............................. 5.7 s
+  Demand (BigQuery) ............................ 1.1 s
+  Fit (BigQuery) ............................... 1.0 s
+  Market (Gemini + Search, 5 grounded
+          searches + page reads) .............. 32.2 s
+  Profit (Python) .............................. under 1 ms
+  Verdict (Gemini explanation) ................ 12.3 s
+
+What the results show:
+  - Accurate: all three cases got the expected verdict, including a
+    deliberately mislabelled product.
+  - Consistent: verdicts come from rule checks in code, so the same
+    inputs always give the same decision.
+  - Fast where it counts: BigQuery agents answer in about 1 second.
+    Market research is the slowest step, and it runs in parallel with
+    the others.
+  - Fails safely: a failed agent is marked "failed" and the rest carry
+    on. If the fit check can't run, it fails closed.
+  - Transparent: the seller watches each agent finish live, so a
+    ~45-second answer doesn't feel like waiting.
+
+
+PAGE 12 - ADDITIONAL DETAILS / FUTURE DEVELOPMENT
+--------------------------------------------------------------------
+  - Make it a Go: for a No-go, calculate the smallest change that passes
+    every rule (lower cost, a new price, a smaller opening order), then
+    re-run with one click.
+  - Compare up to 3 ideas: evaluate in parallel and rank them by margin,
+    speed, cash and risk.
+  - Ask about this verdict: chat with Gemini function calling ("What if
+    I sell at Rs 999?"), where every number comes from a calculator tool.
+  - Inventory agent: warn about cannibalising existing products and
+    overstock in the same category.
+  - Connect real shops: Shopify, WooCommerce and marketplace seller APIs
+    instead of the demo dataset; multi-shop accounts.
+  - Learn from outcomes: track what launched products actually sold and
+    tune the rules.
+  - Speed: cache market research per product type to bring checks under
+    20 seconds.
+  - Beyond fashion: the rules and shop profile are generic, so the same
+    agent works for electronics, beauty or home stores.
+
+Note: Urban Loom is a synthetic demo shop; no real customer data is used.
+
+
+PAGE 13 - LINKS
+--------------------------------------------------------------------
+GitHub Public Repository:   https://github.com/kishor951/gonogo
+Demo Video Link (3 min):    [add your YouTube or Drive link]
+Final Product Link:         https://gonogo-389639819210.asia-south1.run.app
+                            (share the access code in the submission
+                            form, not in the deck, if the deck is public)
+
+
+PAGE 14 - (EMPTY)
+--------------------------------------------------------------------
+Optional: "Thank you" slide with the live URL and a QR code.
+
+
+PAGE 15 - (EMPTY)
+--------------------------------------------------------------------

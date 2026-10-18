@@ -5,7 +5,13 @@
 venv/
 __pycache__/
 *.pyc
+.pytest_cache/
 .env
+.env.*
 *.json
 !package.json
+*.pem
+*.key
+*.p12
+*.log
 .DS_Store

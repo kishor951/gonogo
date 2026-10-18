@@ -146,6 +146,24 @@ function mountTable(holder, t) {
   draw();
 }
 
+// Each page's fixed heading, shown at once while the numbers load (same words as agents/pages.py).
+const HEADS = {
+  inventory: ["Inventory", "Stock for every active product. Sales speed is the last 8 weeks; cover = days the stock on hand lasts at that speed.", "Stock by product"],
+  products: ["Products", "The whole catalogue with list prices and the last 12 months of sales.", "Catalogue"],
+  sales: ["Sales", "The last 30 days compared with the 30 days before, sales by month, and the latest orders.", "By month"],
+  returns: ["Returns", "What comes back, from where, and which products are sent back most. Last 12 months.", "By category"],
+  customers: ["Customers", "Who buys from the shop. Activity is the last 12 months.", "By age band"],
+  suppliers: ["Suppliers", "Who makes the products, how long they take, and how much of the shop depends on each.", "All suppliers"],
+};
+if (HEADS[PAGE]) {
+  const [title, intro, first] = HEADS[PAGE];
+  document.title = `GoNoGo ${title}`;
+  $("title").textContent = title;
+  $("intro").textContent = intro;
+  const h = document.querySelector("#page .sk-h2");
+  if (h) h.outerHTML = `<div class="section-head"><h2>${esc(first)}</h2></div>`;
+}
+
 fetch(`/api/pages/${encodeURIComponent(PAGE)}`).then(async r => {
   const d = await r.json().catch(() => ({}));
   if (!r.ok) throw new Error(typeof d.detail === "string" ? d.detail : `The server answered ${r.status}.`);

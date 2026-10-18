@@ -18,6 +18,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from access import check_code, gate
+from limits import check_limit
 from config import DEFAULT_ASSUMPTIONS, GEMINI_MODEL, MOCK
 from agents.autofill import run_autofill
 from agents.budget import get_budget
@@ -181,7 +182,8 @@ async def read_settings():
 
 
 @app.put("/api/settings")
-async def write_settings(req: SettingsRequest):
+async def write_settings(req: SettingsRequest, request: Request):
+    check_limit(request, "settings")
     try:
         return await save_settings(req.shop_name, req.rules, req.profile)
     except Exception as exc:
@@ -190,9 +192,10 @@ async def write_settings(req: SettingsRequest):
 
 
 @app.post("/api/autofill")
-async def autofill(req: AutofillRequest):
+async def autofill(req: AutofillRequest, request: Request):
     if len(req.image) > 6_000_000:
         raise HTTPException(status_code=413, detail="The photo is too large. Use one under 4 MB.")
+    check_limit(request, "photo")
     if not req.image.startswith("data:image/"):
         raise HTTPException(status_code=400, detail="That file isn't a photo. Use a JPG or PNG image.")
     try:
@@ -203,12 +206,13 @@ async def autofill(req: AutofillRequest):
 
 
 @app.post("/api/evaluate/stream")
-async def evaluate_stream(req: EvaluateRequest):
+async def evaluate_stream(req: EvaluateRequest, request: Request):
     """The same evaluation, streamed as one JSON object per line while the agents work:
     start / done / failed / skipped events for each agent, then {"type": "result", "data": ...}
     (or {"type": "error", "detail": ...})."""
     if req.image and len(req.image) > 6_000_000:
         raise HTTPException(status_code=413, detail="The photo is too large. Use one under 4 MB.")
+    check_limit(request)
     queue: asyncio.Queue = asyncio.Queue()
 
     async def run():
@@ -236,9 +240,10 @@ async def evaluate_stream(req: EvaluateRequest):
 
 
 @app.post("/api/evaluate")
-async def evaluate_product(req: EvaluateRequest):
+async def evaluate_product(req: EvaluateRequest, request: Request):
     if req.image and len(req.image) > 6_000_000:
         raise HTTPException(status_code=413, detail="The photo is too large. Use one under 4 MB.")
+    check_limit(request)
     try:
         return await evaluate(req)
     except ValueError as exc:

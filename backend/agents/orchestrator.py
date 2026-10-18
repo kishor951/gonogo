@@ -12,7 +12,8 @@ import time
 
 from config import DEFAULT_ASSUMPTIONS, MOCK
 from agents.budget import get_budget
-from agents.catalog import allowed_by_department, category_suppliers, get_catalog, get_categories, get_stock, match_catalog
+from agents.catalog import (_split, allowed_by_department, category_suppliers, get_catalog, get_categories,
+                            get_stock, match_catalog, same_style_variants)
 from agents.common import inr
 from agents.demand import run_demand
 from agents.fit import run_fit
@@ -52,7 +53,14 @@ def agent_summary(name: str, r: dict | None) -> str:
         v, units, trend = r.get("velocity") or 0, r.get("expected_monthly_units") or 0, r.get("trend")
         pace = ("faster than" if v >= 1.1 else "slower than" if v < 0.9 else "about as fast as")
         ex, own = r.get("existing"), (r.get("own_closest") or [None])[0]
-        if ex:
+        if ex and ex.get("kind") == "style":
+            others = ", ".join(_split(v["name"])[1] or v["name"] for v in ex["variants"])
+            line = {
+                "dead": f"You already stock the {ex['name']} in {others}: {ex['on_hand']} unsold, no sale in 90 days (dead stock). ",
+                "mixed": f"You already stock the {ex['name']} in {others}; some colours aren't selling ({', '.join(ex['dead_names'])}). ",
+                "selling": f"You already sell the {ex['name']} in {others}, about {ex['per_month']:.0f} a month. ",
+            }[ex["status"]]
+        elif ex:
             st, n_ = ex["status"], ex.get("on_hand")
             line = {
                 "dead": f"You already stock {ex['name']}: {n_} unsold, no sale in 90 days (dead stock). ",
@@ -95,6 +103,11 @@ def agent_summary(name: str, r: dict | None) -> str:
         return line + (f", which fits your {inr(cap)} test budget." if r["cash_needed"] <= cap
                        else f", more than your {inr(cap)} test budget.")
     return ""
+
+
+
+def _style(name: str) -> str:
+    return _split(name)[0]
 
 
 async def evaluate(req, emit=None) -> dict:
@@ -164,20 +177,36 @@ async def evaluate(req, emit=None) -> dict:
         else:
             raise ValueError("The Product agent failed. Choose a department and category and try again.")
 
-    # Is this exactly a product the shop already sells? Then its own stock matters (dead stock, overstock...).
+    # Does the shop already sell this product, or the same style in another colour? Then its own stock matters:
+    # buying more of a style that isn't selling (dead stock) is a No-go, whatever colour it comes in.
     existing = None
+    try:
+        stock = await get_stock()
+    except Exception:
+        stock = {}
+
+    def stock_of(r):
+        row = stock.get(r["sku"]) or {}
+        return {"name": r["name"], "sku": r["sku"], "price_inr": r.get("price_inr"),
+                "units_12m": r.get("units_12m") or 0, "per_month": r["per_month"],
+                "status": row.get("status") or ("discontinued" if r.get("status") != "active" else "unknown"),
+                "on_hand": row.get("on_hand"), "on_order": row.get("on_order"),
+                "cover_days": None if row.get("cover_days") is None else round(row["cover_days"]),
+                "last_sale": str(row.get("last_sale") or r.get("last_sale") or "") or None}
+
     exact = next(iter(match_catalog(req.name, catalog, limit=1)), None)
-    if exact and exact["score"] >= 0.85:
-        try:
-            row = (await get_stock()).get(exact["sku"]) or {}
-        except Exception:
-            row = {}
-        existing = {"name": exact["name"], "sku": exact["sku"], "price_inr": exact.get("price_inr"),
-                    "units_12m": exact.get("units_12m") or 0, "per_month": exact["per_month"],
-                    "status": row.get("status") or ("discontinued" if exact.get("status") != "active" else "unknown"),
-                    "on_hand": row.get("on_hand"), "on_order": row.get("on_order"),
-                    "cover_days": None if row.get("cover_days") is None else round(row["cover_days"]),
-                    "last_sale": str(row.get("last_sale") or exact.get("last_sale") or "") or None}
+    if exact and exact["score"] >= 0.85 and exact["same_style"] and exact["same_colour"]:
+        existing = {**stock_of(exact), "kind": "same"}
+    else:
+        variants = [stock_of(r) for r in same_style_variants(req.name, catalog)]
+        known = [v for v in variants if v["status"] not in ("unknown", "discontinued")]
+        if known:
+            dead = [v for v in known if v["status"] == "dead"]
+            existing = {"kind": "style", "name": _style(known[0]["name"]), "variants": known,
+                        "status": "dead" if len(dead) == len(known) else "mixed" if dead else "selling",
+                        "on_hand": sum(v.get("on_hand") or 0 for v in dead) if dead else None,
+                        "per_month": round(sum(v["per_month"] for v in known), 1),
+                        "dead_names": [v["name"] for v in dead]}
 
     price_assumed = not req.price
     price = float(req.price) if req.price else float(round(req.cost * 2.2 / 10) * 10)
