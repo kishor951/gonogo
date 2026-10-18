@@ -7,118 +7,174 @@
 <meta name="description" content="Know if a product will sell before you stock it.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23137a4f'/%3E%3Cpath d='M9 16.5l4.5 4.5L23 11.5' stroke='white' stroke-width='3.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%23137a4f'/%3E%3Ccircle cx='20' cy='20' r='15.5' fill='none' stroke='white' stroke-opacity='.25' stroke-width='1.4'/%3E%3Cg transform='rotate(40 20 20)'%3E%3Cpath d='M20 6.5L25 20H15Z' fill='white'/%3E%3Cpath d='M15 20H25L20 33.5Z' fill='white' fill-opacity='.4'/%3E%3Ccircle cx='20' cy='20' r='2.3' fill='%23137a4f'/%3E%3C/g%3E%3C/svg%3E">
 <link rel="stylesheet" href="/static/app.css">
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <a class="brand" href="/">
-      <svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="10" fill="var(--brand)"/><path d="M11 20.5l6 6L29 14" stroke="var(--brand-ink)" stroke-width="3.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <div><h1>Go<b>No</b>Go</h1><div class="tag">Know if a product will sell before you stock it.</div></div>
-    </a>
-    <nav class="tabs" aria-label="Pages">
-      <a href="/" aria-current="page">Discovery</a>
-      <a href="/organisation">Organisation</a>
-    </nav>
-  </header>
-  <p class="shop-line" id="shop-line" hidden></p>
+<div class="app">
+<aside class="side" id="side"></aside>
+<main class="wrap">
+  <div class="disc" id="disc">
+   <div class="chat">
+    <div class="hero" id="hero">
+      <div class="buddy" id="buddy"></div>
+      <h1 class="hero-title" id="greeting">Hello!</h1>
+      <p class="hero-sub">I'm <b>GoNoGo</b>, your buying buddy. What are you thinking of stocking?
+        Show me a photo or tell me about it, plus what it costs you, and I'll check with the team whether it's worth buying.</p>
+      <div class="starters">
+        <label class="starter" for="photo"><span aria-hidden="true">📷</span> Check a photo</label>
+        <button type="button" class="starter" data-example="0"><span aria-hidden="true">✦</span> Should I stock active leggings?</button>
+        <button type="button" class="starter" data-example="1"><span aria-hidden="true">✦</span> Is a wool overcoat worth it?</button>
+      </div>
+    </div>
 
-  <div class="grid">
-    <form class="panel" id="form" novalidate>
-      <h2>Propose a product</h2>
-      <div class="examples" aria-label="Examples">
-        <span class="hint">Try an example:</span>
-        <button type="button" class="chip" data-example="0">Active leggings</button>
-        <button type="button" class="chip" data-example="1">Wool overcoat</button>
+    <div class="thread" id="thread" aria-live="polite"></div>
+    <button type="button" class="jump" id="jump" hidden aria-label="Jump to the latest message">↓</button>
+
+    <div class="composer-wrap">
+    <form class="composer" id="form" novalidate>
+      <div class="cmp-photo" id="cmp-photo" hidden>
+        <span class="pic" id="pic"><img id="photo-preview" alt="Your photo"><span class="boxes" id="boxes"></span></span>
+        <button type="button" class="cmp-x" id="photo-remove" aria-label="Remove photo">×</button>
       </div>
-      <div class="field">
-        <label for="name">Product name</label>
-        <input type="text" id="name" required maxlength="120" placeholder="e.g. High-waist active leggings">
+      <div class="detect" id="detect" role="status" hidden></div>
+      <textarea id="name" rows="1" maxlength="120" aria-label="Product" placeholder="Tell GoNoGo what you want to stock, or add or paste a photo…"></textarea>
+      <div class="cmp-bar">
+        <input type="file" id="photo" accept="image/*" class="sr-only">
+        <label class="cmp-btn" for="photo" title="Add a photo">
+          <svg viewBox="0 0 24 24" width="19" height="19" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4zM12 17a4 4 0 100-8 4 4 0 000 8z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+          <span>Photo</span>
+        </label>
+        <label class="cmp-field"><span>Cost ₹</span><input type="number" id="cost" min="1" step="1" inputmode="numeric" placeholder="450" aria-label="Your cost price in rupees"></label>
+        <label class="cmp-field"><span>Price ₹</span><input type="number" id="price" min="1" step="1" inputmode="numeric" placeholder="auto" aria-label="Selling price in rupees"></label>
+        <button class="cmp-go" id="submit" type="submit" aria-label="Get the verdict" title="Get the verdict">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
       </div>
-      <div class="field">
-        <label for="description">Description <span class="hint">(optional)</span></label>
-        <textarea id="description" maxlength="600" placeholder="Material, fit, who it's for"></textarea>
-      </div>
-      <div class="field">
-        <span class="label" id="dept-label">Department</span>
-        <div class="seg" role="radiogroup" aria-labelledby="dept-label">
-          <label><input type="radio" name="department" id="dept-women" value="Women" checked><span>Women</span></label>
-          <label><input type="radio" name="department" id="dept-men" value="Men"><span>Men</span></label>
-        </div>
-      </div>
-      <div class="field">
-        <label for="category">Category</label>
-        <select id="category"><option value="">Let the AI choose</option></select>
-      </div>
-      <div class="row2">
-        <div class="field">
-          <label for="cost">Cost price (₹)</label>
-          <input type="number" id="cost" min="1" step="1" required placeholder="450">
-        </div>
-        <div class="field">
-          <label for="price">Selling price (₹)</label>
-          <input type="number" id="price" min="1" step="1" placeholder="Optional">
-        </div>
-      </div>
-      <div class="field">
-        <label for="photo">Photo <span class="hint">(optional)</span></label>
-        <div class="photo">
-          <input type="file" id="photo" accept="image/*">
-          <img id="photo-preview" alt="" hidden>
-        </div>
-      </div>
-      <div class="rules-used" id="rules-used"></div>
-      <button class="btn" id="submit" type="submit">Get the verdict</button>
     </form>
+    <p class="hint cmp-note" id="price-hint" hidden></p>
 
-    <section class="results" id="results" aria-live="polite">
-      <div class="panel empty">
-        <h2>How GoNoGo decides</h2>
-        <p>Describe a product you're thinking of stocking. AI agents check it against your sales history and today's online prices, find competing products, then a verdict agent applies your shop's rules from the Organisation page and explains the answer. Every reason opens to the numbers behind it.</p>
-        <div class="pipeline" aria-label="Agent flow">
-          <span class="node">Product</span><span class="arrow">→</span>
-          <span class="node">Market · Demand · Fit</span><span class="arrow">→</span>
-          <span class="node">Profit</span><span class="arrow">→</span>
-          <span class="node final">Verdict</span>
-        </div>
-      </div>
-    </section>
+    <div class="cmp-under">
+
+      <button type="button" class="link-btn" id="details-open">Details<span id="details-sum" hidden></span></button>
+      <span class="sep" aria-hidden="true">·</span>
+      <span id="rules-used"></span>
+    </div>
+    </div>
+   </div>
+
+   <button type="button" class="refs-toggle" id="refs-toggle" hidden aria-controls="refs" aria-expanded="false">
+     <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path d="M6 3.5h9l3.5 3.5v13.5H6zM14.5 3.5V7.5h4M9 12h6.5M9 15.5h6.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+     References<span class="new-dot" hidden></span></button>
+   <aside class="refs" id="refs" aria-labelledby="refs-title" aria-hidden="true">
+     <div class="refs-head"><div><h2 id="refs-title">References</h2><span class="hint" id="refs-for"></span></div>
+       <button type="button" class="refs-x" id="refs-close" aria-label="Close references">×</button></div>
+     <div class="refs-body" id="refs-body"></div>
+   </aside>
   </div>
-  <footer>Sales history: Google's public thelook_ecommerce sample store in BigQuery. Market prices and competitor products: Gemini with Grounding with Google Search. Built for the Google Cloud AI Builder Cup 2026.</footer>
+</main>
 </div>
 
+
+  <dialog class="modal" id="details-modal" aria-labelledby="details-title">
+    <form method="dialog" class="modal-card">
+      <div class="modal-head"><h2 id="details-title">Product details</h2><button class="modal-x" value="close" aria-label="Close">×</button></div>
+      <p class="hint">Optional. A photo fills these in for you; otherwise GoNoGo works them out.</p>
+      <div class="modal-body">
+          <div class="field">
+            <label for="description">Description <span class="hint">(optional)</span></label>
+            <textarea id="description" maxlength="600" placeholder="Material, fit, who it's for"></textarea>
+          </div>
+          <div class="field">
+            <span class="label" id="dept-label">Department</span>
+            <div class="seg" role="radiogroup" aria-labelledby="dept-label">
+              <label><input type="radio" name="department" id="dept-women" value="Women"><span>Women</span></label>
+              <label><input type="radio" name="department" id="dept-men" value="Men"><span>Men</span></label>
+            </div>
+          </div>
+          <div class="field">
+            <label for="category">Category</label>
+            <select id="category"><option value="">Let the AI choose</option></select>
+          </div>
+        </div>
+      <div class="modal-foot"><button class="btn" value="done">Done</button></div>
+    </form>
+  </dialog>
+
+  <dialog class="modal" id="rules-modal" aria-labelledby="rules-title">
+    <form class="modal-card" id="rules-form-modal" novalidate>
+      <div class="modal-head"><h2 id="rules-title">Your shop's rules</h2><button type="button" class="modal-x" id="rules-x" aria-label="Close">×</button></div>
+      <p class="hint">Every verdict uses these. Saved for every browser.</p>
+      <div class="modal-body" id="rules-fields"></div>
+      <div class="modal-foot">
+        <span class="saved" id="rules-saved" role="status"></span>
+        <a class="hint" href="/business">Full Business page</a>
+        <button class="btn" type="submit" id="rules-save">Save rules</button>
+      </div>
+    </form>
+  </dialog>
 <script src="/static/shared.js"></script>
+<script src="/static/agents.js"></script>
 <script>
 const EXAMPLES = [
   {name: "High-waist active leggings", description: "Squat-proof stretch leggings with a side phone pocket, for gym and yoga", department: "Women", category: "Leggings", cost: 450, price: 1299},
-  {name: "Double-breasted wool overcoat", description: "Long, heavy wool-blend winter overcoat", department: "Men", category: "Outerwear & Coats", cost: 6500, price: 8999},
+  {name: "Double-breasted wool overcoat", description: "Long, heavy wool-blend winter overcoat", department: "Men", category: "Outerwear", cost: 6500, price: 8999},
 ];
-const AGENT_INFO = {
-  product: ["Product agent", "Reads the idea and photo"],
-  market: ["Market agent", "Prices and competitors via Google Search"],
-  demand: ["Demand agent", "Comparable sales in BigQuery"],
-  fit: ["Fit agent", "Basket and buyer segments"],
-  profit: ["Profit agent", "Margin and break-even, in code"],
-  verdict: ["Verdict agent", "Applies your rules, explains"],
-};
+// Reason tags and the partial-result note name the agent by its character.
+const AGENT_INFO = Object.fromEntries(Object.entries(PERSONAS).map(([k, p]) => [k, [`${p.name} · ${p.role}`, p.job]]));
 const WORD = {go: "Go", no_go: "No-go", go_with_conditions: "Go, with conditions"};
-const org = loadOrg();
+let org = loadOrg();
 let categories = [];
-let photoData = null;
+let photoData = null;     // the whole photo, as uploaded (shrunk to 1024px)
+let found = [];           // products found in it: {n, box, name, department, category, fits_shop, price, ...}
+let picked = null;        // the number of the product being checked
+let pickedImage = null;   // that product cut out of the photo, sent for the verdict
 
-// --- organisation context ---
-if (org.shop_name) {
-  $("shop-line").hidden = false;
-  $("shop-line").innerHTML = `Deciding for <b>${esc(org.shop_name)}</b>`;
+// --- the shop's rules (from BigQuery; this browser's copy if offline) ---
+let rulesFailed = false;   // only warn once loading the saved rules has actually failed
+function showRules() {
+  const r = org.rules;
+  $("rules-used").innerHTML = `<button type="button" class="link-btn" onclick="openRules()" title="Keep at least ${esc(r.min_margin_pct)}% of each sale · earn the launch cost back within ${esc(r.max_breakeven_weeks)} weeks">${esc(org.shop_name || "Your")} rules</button>${
+    rulesFailed ? ` <span class="hint">(offline copy)</span>` : ""}`;
 }
-const r = org.rules;
-$("rules-used").innerHTML = `<span><strong>Your rules</strong> · <a href="/organisation">edit on Organisation</a></span>
-  <span class="vals">Margin ≥ ${esc(r.min_margin_pct)}% · break-even ≤ ${esc(r.max_breakeven_weeks)} weeks · fees ${esc(r.platform_fee_pct)}% · shipping ${inr(r.shipping_per_unit)} · launch cost ${inr(r.launch_cost)}</span>`;
+showRules();
+fetchSettings().then(o => { org = o; rulesFailed = o.source !== "bigquery"; showRules(); if (typeof greet === "function") greet(); });
+
+// --- the two dialogs: product details, and the shop's rules ---
+$("details-open").addEventListener("click", () => $("details-modal").showModal());
+function openRules() {
+  $("rules-fields").innerHTML = RULE_GROUPS.map(([title, rules]) => `<fieldset><legend>${esc(title)}</legend>${
+    rules.map(([k, label, , hint]) => `<div class="rule"><label for="m_${k}">${esc(label)}</label>
+      <input type="number" id="m_${k}" step="any" min="0" value="${esc(org.rules[k])}"><span class="hint">${esc(hint)}</span></div>`).join("")
+  }</fieldset>`).join("");
+  $("rules-saved").textContent = "";
+  $("rules-modal").showModal();
+}
+$("rules-x").addEventListener("click", () => $("rules-modal").close());
+$("rules-form-modal").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const rules = {...org.rules};
+  RULES.forEach(([k]) => { const v = parseFloat($("m_" + k).value); if (!isNaN(v) && v >= 0) rules[k] = v; });
+  $("rules-save").disabled = true; $("rules-saved").textContent = "Saving…";
+  try {
+    org = {...org, ...(await putSettings({rules}))};
+    rulesFailed = false; showRules();
+    $("rules-saved").textContent = "Saved.";
+    setTimeout(() => $("rules-modal").close(), 500);
+  } catch (err) {
+    $("rules-saved").textContent = `Couldn't save: ${err.message}`;
+  } finally {
+    $("rules-save").disabled = false;
+  }
+});
+// click outside a dialog to close it
+document.querySelectorAll("dialog.modal").forEach(d => d.addEventListener("click", (e) => { if (e.target === d) d.close(); }));
 
 // --- form setup ---
+// The department, only if someone chose it (Details, a photo or an example); otherwise the agents decide.
+function deptChosen() { return document.querySelector("input[name=department]:checked")?.value || null; }
 function fillCategories() {
-  const dept = document.querySelector("input[name=department]:checked").value;
+  const dept = deptChosen();
   const sel = $("category"), keep = sel.value;
   const cats = categories.filter(c => c.department === dept).map(c => c.category);
   sel.innerHTML = `<option value="">Let the AI choose</option>` + cats.map(c => `<option>${esc(c)}</option>`).join("");
@@ -127,18 +183,45 @@ function fillCategories() {
 document.querySelectorAll("input[name=department]").forEach(el => el.addEventListener("change", fillCategories));
 fetch("/api/categories").then(res => res.ok ? res.json() : []).then(rows => { categories = rows; fillCategories(); }).catch(() => {});
 
+function setDetails(d) {
+  $("name").value = d.name || "";
+  if (typeof autoGrow === "function") autoGrow();
+  $("description").value = d.description || "";
+  if (d.department) $(d.department === "Men" ? "dept-men" : "dept-women").checked = true;
+  fillCategories();
+  if (d.category) $("category").value = d.category;
+  updateSummary();
+}
+function updateSummary() {
+  const name = $("name").value.trim(), cat = $("category").value;
+  const dept = deptChosen();
+  $("details-sum").textContent = name ? [name, dept, cat].filter(Boolean).join(" · ") : "";
+}
+["name", "category"].forEach(id => $(id).addEventListener("input", updateSummary));
+document.querySelectorAll("input[name=department]").forEach(el => el.addEventListener("change", updateSummary));
+$("price").addEventListener("input", () => { delete $("price").dataset.auto; });
+
 document.querySelectorAll("[data-example]").forEach(btn => btn.addEventListener("click", () => {
   const ex = EXAMPLES[+btn.dataset.example];
-  $("name").value = ex.name; $("description").value = ex.description;
-  $(ex.department === "Men" ? "dept-men" : "dept-women").checked = true;
-  fillCategories(); $("category").value = ex.category;
-  $("cost").value = ex.cost; $("price").value = ex.price;
+  clearPhoto();
+  setDetails(ex);
+  $("cost").value = ex.cost; $("price").value = ex.price; delete $("price").dataset.auto;
+  $("price-hint").hidden = true;
 }));
 
-$("photo").addEventListener("change", (e) => {
-  const file = e.target.files[0];
-  photoData = null; $("photo-preview").hidden = true;
-  if (!file) return;
+// --- start from a photo: read it, fill in the details, suggest a price ---
+function clearPhoto() {
+  photoData = null; $("photo").value = "";
+  $("cmp-photo").hidden = true;
+  found = []; picked = null; pickedImage = null; $("boxes").innerHTML = "";
+  $("detect").hidden = true;
+}
+function showDetect(html, kind) {
+  $("detect").className = "detect" + (kind ? " " + kind : "");
+  $("detect").innerHTML = html; $("detect").hidden = false;
+}
+function usePhoto(file) {
+  if (!file || !file.type.startsWith("image/")) { showDetect("That file isn't a photo. Use a JPG or PNG image.", "bad"); return; }
   const img = new Image();
   img.onload = () => {   // shrink to 1024px so the upload stays small
     const scale = Math.min(1, 1024 / Math.max(img.width, img.height));
@@ -146,47 +229,398 @@ $("photo").addEventListener("change", (e) => {
     c.width = Math.round(img.width * scale); c.height = Math.round(img.height * scale);
     c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
     photoData = c.toDataURL("image/jpeg", 0.85);
-    $("photo-preview").src = photoData; $("photo-preview").hidden = false;
+    $("photo-preview").src = photoData; $("cmp-photo").hidden = false;
+    found = []; picked = null; pickedImage = null; $("boxes").innerHTML = "";
     URL.revokeObjectURL(img.src);
+    readPhoto();
   };
+  img.onerror = () => showDetect("Couldn't open that photo. Try a JPG or PNG.", "bad");
   img.src = URL.createObjectURL(file);
+}
+async function readPhoto() {
+  const sent = photoData;
+  showDetect(`<span class="reading"><span class="dot working"></span>Looking for products in your photo…</span>`);
+  try {
+    const res = await fetch("/api/autofill", {method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({image: sent, hint: $("description").value.trim()})});
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(typeof data.detail === "string" ? data.detail : `The server answered ${res.status}.`);
+    if (sent !== photoData) return;   // a newer photo was added meanwhile
+    found = data.items || [];
+    if (!found.length) {
+      showDetect("Couldn't find a product in this photo. Try a clearer photo, or type the details below.", "bad");
+      return;
+    }
+    drawBoxes();
+    if (!found.some(it => it.fits_shop)) {
+      setDetails({name: found[0].name, description: found[0].description});
+      $("category").value = ""; updateSummary();
+      if ($("price").dataset.auto) { $("price").value = ""; delete $("price").dataset.auto; }
+      $("price-hint").hidden = true;
+      showFound();
+      return;
+    }
+    showFound();
+    pickProduct(data.selected || found.find(it => it.fits_shop).n);
+    $("cost").focus();
+  } catch (err) {
+    if (sent !== photoData) return;
+    showDetect(`${esc(err.message)}`, "bad");
+  }
+}
+
+// Numbered boxes on the photo; the shop's products can be picked by tapping them.
+function drawBoxes() {
+  $("boxes").innerHTML = found.filter(it => it.box).map(it => {
+    const [y0, x0, y1, x1] = it.box;
+    return `<button type="button" class="pbox${it.fits_shop ? "" : " off"}${it.n === picked ? " on" : ""}" data-n="${it.n}"
+      style="top:${y0 / 10}%;left:${x0 / 10}%;height:${(y1 - y0) / 10}%;width:${(x1 - x0) / 10}%"
+      aria-label="${it.n}: ${esc(it.name)}${it.fits_shop ? "" : " (your shop doesn't sell this)"}"${it.fits_shop ? "" : " tabindex=\"-1\""}>
+      <span class="pnum">${it.n}</span></button>`;
+  }).join("");
+}
+$("boxes").addEventListener("click", (e) => {
+  const b = e.target.closest(".pbox");
+  if (!b) return;
+  e.preventDefault();   // the photo sits in the upload area: don't open the file picker
+  const it = found.find(x => x.n === +b.dataset.n);
+  if (it && it.fits_shop) pickProduct(it.n);
 });
 
-// --- submit ---
+function showFound() {
+  const sold = found.filter(it => it.fits_shop).length, shop = org.shop_name || "your shop";
+  const head = !sold ? (found.length === 1 ? `This isn't something ${shop} sells.` : `None of these suit ${shop}.`)
+    : found.length === 1 ? "Found 1 product." : `Found ${found.length} products.` + (sold > 1 ? " Pick the one to check:" : "");
+  showDetect(`<span><strong>${esc(head)}</strong></span>
+    <div class="found-list" role="radiogroup" aria-label="Products in the photo">${found.map(it => `
+      <button type="button" class="found${it.fits_shop ? "" : " off"}" role="radio" aria-checked="false" data-n="${it.n}"${it.fits_shop ? "" : " disabled"}>
+        <span class="pnum">${it.n}</span>
+        <span class="found-text"><b>${esc(it.name)}</b>
+          <small>${it.fits_shop ? `${esc(it.department)} · ${esc(it.category)}${it.price && it.price.suggested_inr ? ` · usually ${inr(it.price.suggested_inr)}` : ""}`
+                                : esc(it.reason || `${it.what_it_is || "This"}: your shop doesn't sell this`)}</small></span>
+      </button>`).join("")}
+    </div>${sold ? "" : `<span class="warn-text">Try a photo of something you'd sell, or a single product.</span>`}`, sold ? "ok" : "bad");
+  $("detect").querySelectorAll(".found:not([disabled])").forEach(b => b.addEventListener("click", () => pickProduct(+b.dataset.n)));
+}
+
+// Choose one product: fill in its details and price, highlight it, and cut it out of the photo for the verdict.
+function pickProduct(n) {
+  const p = found.find(it => it.n === n);
+  if (!p) return;
+  picked = n;
+  drawBoxes();
+  $("detect").querySelectorAll(".found").forEach(b => b.setAttribute("aria-checked", String(+b.dataset.n === n)));
+  setDetails(p);
+  pickedImage = cropTo(p.box);
+  const pr = p.price;
+  if (pr && pr.suggested_inr) {
+    if (!$("price").value || $("price").dataset.auto) { $("price").value = pr.suggested_inr; $("price").dataset.auto = "1"; }
+    $("price-hint").hidden = false;
+    $("price-hint").textContent = `Suggested ${inr(pr.suggested_inr)}: half of your ${p.category} sales are at or below this price. ` +
+      `Your ${pr.products} ${p.category} sell from ${inr(pr.min_inr)} to ${inr(pr.max_inr)}, most between ${inr(pr.low_inr)} and ${inr(pr.high_inr)}.`;
+  } else {
+    if ($("price").dataset.auto) { $("price").value = ""; delete $("price").dataset.auto; }
+    $("price-hint").hidden = false;
+    $("price-hint").textContent = `You don't sell ${p.category} yet, so enter a selling price, or leave it empty to use 2.2× cost.`;
+  }
+}
+
+// The picked product's part of the photo (with a little margin), so the agents judge only that product.
+function cropTo(box) {
+  const img = $("photo-preview");
+  if (!box || !img.naturalWidth || found.length < 2) return null;
+  const [y0, x0, y1, x1] = box, W = img.naturalWidth, H = img.naturalHeight, pad = 0.06;
+  const left = Math.max(0, (x0 / 1000 - pad) * W), top = Math.max(0, (y0 / 1000 - pad) * H);
+  const right = Math.min(W, (x1 / 1000 + pad) * W), bottom = Math.min(H, (y1 / 1000 + pad) * H);
+  const c = document.createElement("canvas");
+  c.width = Math.round(right - left); c.height = Math.round(bottom - top);
+  c.getContext("2d").drawImage(img, left, top, right - left, bottom - top, 0, 0, c.width, c.height);
+  return c.toDataURL("image/jpeg", 0.88);
+}
+$("photo").addEventListener("change", (e) => usePhoto(e.target.files[0]));
+const drop = $("form");   // drop a photo anywhere on the search box
+$("photo-remove").addEventListener("click", () => { clearPhoto(); $("price-hint").hidden = true; });
+["dragenter", "dragover"].forEach(ev => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add("over"); }));
+["dragleave", "drop"].forEach(ev => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.remove("over"); }));
+drop.addEventListener("drop", (e) => usePhoto(e.dataTransfer.files[0]));
+// Paste a photo (Cmd/Ctrl+V) into the box, or anywhere on the page: copied images and screenshots work too.
+// Pasting text still pastes text as usual.
+document.addEventListener("paste", (e) => {
+  const item = [...(e.clipboardData?.items || [])].find(i => i.kind === "file" && i.type.startsWith("image/"));
+  if (!item) return;
+  e.preventDefault();
+  usePhoto(item.getAsFile());
+});
+
+// --- ask: a chat turn ---
+const answers = [];   // every answer so far: {data, body}; the References panel shows one of them
+const asked = [];     // every question so far (the body sent), for the Edit buttons
+
+let running = null;    // the AbortController of the check in progress (the go button becomes Stop)
+let convId = null;     // this conversation, saved in the browser for "Recent checks"
+
 $("form").addEventListener("submit", async (e) => {
   e.preventDefault();
+  if (running) { running.abort(); return; }   // the button is "Stop" while the team works
   const name = $("name").value.trim(), cost = parseFloat($("cost").value);
-  if (name.length < 2 || !(cost > 0)) { showError("Add a product name and a cost price to get a verdict."); return; }
+  if (!(cost > 0)) { composerHint("Enter your cost price (what you pay per piece) to get a verdict."); $("cost").focus(); return; }
+  if (name.length < 2) {
+    $("name").focus();
+    composerHint(photoData ? "Wait for the photo to be read, or describe the product." : "Add a photo, or describe the product.");
+    return;
+  }
   const body = {
     name, description: $("description").value.trim(),
-    department: document.querySelector("input[name=department]:checked").value,
+    department: deptChosen(),   // not chosen = the Product agent decides
     category: $("category").value || null, cost,
-    price: parseFloat($("price").value) || null, image: photoData, assumptions: org.rules,
+    price: parseFloat($("price").value) || null, image: pickedImage || photoData, assumptions: org.rules,
   };
-  showLoading();
-  $("submit").disabled = true;
-  try {
-    const res = await fetch("/api/evaluate", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body)});
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(typeof data.detail === "string" ? data.detail : `The server answered ${res.status}. Check the form and try again.`);
-    render(data, body);
-  } catch (err) {
-    showError(err.message || "Something went wrong. Try again.");
-  } finally {
-    $("submit").disabled = false; clearInterval(window._timer);
-  }
+  resetComposer();
+  await ask(body);
 });
 
-function showLoading() {
-  const t0 = Date.now();
-  $("results").innerHTML = `<div class="panel loading"><h2>Agents at work <span class="hint" id="elapsed">0s</span></h2><ul>${
-    Object.entries(AGENT_INFO).map(([k, [n, d]]) => `<li><span class="dot working"></span>${esc(n)}<span class="d">${esc(d)}</span></li>`).join("")
-  }</ul><p class="note">Usually 30 to 45 seconds. The live market search takes longest.</p></div>`;
-  clearInterval(window._timer);
-  window._timer = setInterval(() => { const el = $("elapsed"); if (el) el.textContent = Math.round((Date.now() - t0) / 1000) + "s"; }, 500);
+function userBubble(body, i) {
+  const pic = body.image || body.thumb;
+  return `<div class="msg user">
+    ${pic ? `<img src="${pic}" alt="">` : ""}
+    <div><b>${esc(body.name)}</b><small>Cost ${inr(body.cost)} · ${body.price ? "price " + inr(body.price) : "price: suggest one"}</small></div>
+    <button type="button" class="edit-btn" onclick="editQuestion(${i})" aria-label="Edit this question">
+      <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M4 20h4l10-10-4-4L4 16zM13 7l4 4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></svg>Edit</button></div>`;
 }
-function showError(msg) {
-  $("results").innerHTML = `<div class="error" role="alert"><strong>Couldn't get a verdict.</strong> ${esc(msg)}</div>`;
+
+async function ask(body) {
+  $("disc").classList.add("asked");
+  requestAnimationFrame(placeComposer);
+  if (body.image && !body.thumb) body.thumb = await thumbOf(body.image);
+  asked.push(body);
+  $("thread").insertAdjacentHTML("beforeend", userBubble(body, asked.length - 1));
+  // the team's answer, filling in as they work
+  const turn = document.createElement("div");
+  turn.className = "msg bot";
+  turn.innerHTML = gogoSay(`On it! Asking the team about <b>${esc(body.name)}</b>…`, "intro busy") + `<div class="live"></div>`;
+  $("thread").appendChild(turn);
+  const live = new LiveAnswer(turn.querySelector(".live"), followThread);
+  turn.scrollIntoView({behavior: REDUCED_MOTION ? "auto" : "smooth", block: "start"});
+
+  running = new AbortController();
+  setRunning(true);
+  try {
+    const data = await evaluateStreamed(body, (ev) => live.event(ev), running.signal);
+    live.finish(data);
+    answers.push({data, body});
+    turn.insertAdjacentHTML("beforeend", answerHTML(data, body, answers.length - 1));
+    showRefs(answers.length - 1);
+    saveConversation();
+    turn.scrollIntoView({behavior: REDUCED_MOTION ? "auto" : "smooth", block: "start"});   // start of the answer
+  } catch (err) {
+    live.stop();
+    turn.insertAdjacentHTML("beforeend", err.name === "AbortError"
+      ? `<p class="note">Stopped. Change anything and ask again, or press Retry.</p>
+         <div class="msg-actions"><button type="button" onclick="ask({...asked[${asked.length - 1}]})">↻ Retry</button></div>`
+      : `<div class="error" role="alert"><strong>Couldn't get a verdict.</strong> ${esc(err.message || "Something went wrong. Try again.")}</div>`);
+  } finally {
+    turn.querySelector(".gogo-say.busy")?.classList.remove("busy");   // the compass settles
+    running = null;
+    setRunning(false);
+  }
+}
+
+// The go button becomes a Stop button while the team works.
+function setRunning(on) {
+  const b = $("submit");
+  b.classList.toggle("stop", on);
+  b.setAttribute("aria-label", on ? "Stop" : "Get the verdict");
+  b.title = on ? "Stop" : "Get the verdict";
+  b.innerHTML = on
+    ? `<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor"/></svg>`
+    : `<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+}
+
+// A small copy of the photo for the question bubble and the saved history (full photos are too big to keep).
+function thumbOf(src) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      const scale = Math.min(1, 120 / Math.max(img.width, img.height));
+      const c = document.createElement("canvas");
+      c.width = Math.round(img.width * scale); c.height = Math.round(img.height * scale);
+      c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+      resolve(c.toDataURL("image/jpeg", 0.7));
+    };
+    img.onerror = () => resolve(null);
+    img.src = src;
+  });
+}
+
+// Copy an answer as plain text (verdict, numbers, reasons).
+function copyAnswer(i, btn) {
+  const {data: d, body} = answers[i];
+  const k = d.key_numbers || {};
+  const lines = [`${body.name}: ${WORD[d.verdict] || d.verdict}`, d.headline, d.advice,
+    `Price ${inr(k.price)} · you keep ${k.margin != null ? Math.round(k.margin * 100) + "%" : "-"} · cash needed ${inr(k.cash_needed)}`,
+    ...(d.reasons || []).map((r, j) => `${j + 1}. ${r.text}`)].filter(Boolean);
+  const text = lines.join("\n");
+  const done = () => { btn.textContent = "✓ Copied"; setTimeout(() => { btn.textContent = "⧉ Copy"; }, 1600); };
+  const fallback = () => {   // when the clipboard API isn't allowed: copy through a hidden text box
+    const t = document.createElement("textarea");
+    t.value = text; t.style.position = "fixed"; t.style.opacity = "0";
+    document.body.appendChild(t); t.select();
+    const ok = document.execCommand("copy");
+    t.remove();
+    if (ok) done(); else btn.textContent = "Couldn't copy";
+  };
+  if (navigator.clipboard) navigator.clipboard.writeText(text).then(done).catch(fallback); else fallback();
+}
+
+// Enter sends (Shift+Enter for a new line); the box grows with what you type.
+function autoGrow() { const t = $("name"); t.style.height = "auto"; t.style.height = Math.min(t.scrollHeight, 180) + "px"; }
+$("name").addEventListener("input", autoGrow);
+$("name").addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); if (!running) $("form").requestSubmit(); }
+});
+
+// "↓" appears when you've scrolled up away from the newest message.
+addEventListener("scroll", () => {
+  const el = document.scrollingElement;
+  $("jump").hidden = !$("disc").classList.contains("asked") || el.scrollHeight - scrollY - innerHeight < 360;
+}, {passive: true});
+$("jump").addEventListener("click", () => window.scrollTo({top: document.scrollingElement.scrollHeight, behavior: REDUCED_MOTION ? "auto" : "smooth"}));
+
+// Close the References panel (it comes back with the next answer, or the References button).
+$("refs-close").addEventListener("click", closeRefs);
+
+// A greeting, like a chat app: by time of day, with the shop's name.
+function greet() {
+  const h = new Date().getHours();
+  const part = h < 5 ? "Good evening" : h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
+  $("greeting").textContent = `${part}${org.shop_name ? ", " + org.shop_name : ""}!`;
+}
+greet();
+$("buddy").innerHTML = gogoHTML(72);
+
+// --- Recent checks: each conversation is saved in this browser (no full photos: they're too big) ---
+const HISTORY_KEY = "gonogo.checks.v1";
+function loadHistory() { try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]"); } catch (e) { return []; } }
+function saveConversation() {
+  if (!convId) convId = Date.now().toString(36);
+  const turns = answers.map(({data, body}) => ({body: {...body, image: null}, data}));
+  const last = answers.at(-1);
+  // name and dot both describe the latest question in the conversation
+  const conv = {id: convId, title: last.body.name + (answers.length > 1 ? ` (+${answers.length - 1})` : ""),
+                verdict: last.data.verdict, updated: Date.now(), turns};
+  let list = [conv, ...loadHistory().filter(c => c.id !== convId)].slice(0, 12);
+  for (;;) {   // if the browser is full, drop the oldest checks
+    try { localStorage.setItem(HISTORY_KEY, JSON.stringify(list)); break; }
+    catch (e) { if (list.length <= 1) break; list = list.slice(0, -1); }
+  }
+  history.replaceState(null, "", `/?c=${convId}`);
+  if (typeof renderSidebar === "function") renderSidebar();
+}
+// Open a saved conversation (/?c=<id>).
+function restoreConversation(id) {
+  const conv = loadHistory().find(c => c.id === id);
+  if (!conv) return;
+  convId = id;
+  $("disc").classList.add("asked");
+  conv.turns.forEach(({body, data}) => {
+    asked.push(body);
+    answers.push({data, body});
+    $("thread").insertAdjacentHTML("beforeend", userBubble(body, asked.length - 1));
+    const turn = document.createElement("div");
+    turn.className = "msg bot";
+    turn.innerHTML = gogoSay(`On it! Asking the team about <b>${esc(body.name)}</b>…`, "intro") + savedStepsHTML(data) + answerHTML(data, body, answers.length - 1);
+    $("thread").appendChild(turn);
+  });
+  showRefs(answers.length - 1);
+  requestAnimationFrame(() => { placeComposer(); window.scrollTo({top: document.scrollingElement.scrollHeight}); });
+}
+const openId = new URLSearchParams(location.search).get("c");
+if (openId) restoreConversation(openId);
+
+// Keep the newest line in view while the team works, unless you've scrolled up to read.
+function followThread() {
+  const el = document.scrollingElement;
+  if (el.scrollHeight - scrollY - innerHeight < 320) window.scrollTo({top: el.scrollHeight});
+}
+
+// The search box is fixed to the bottom of the window, lined up with the conversation column.
+function placeComposer() {
+  if (!$("disc").classList.contains("asked")) return;
+  const r = $("thread").getBoundingClientRect(), wrap = document.querySelector(".composer-wrap");
+  wrap.style.left = r.left + "px"; wrap.style.width = r.width + "px";
+  $("jump").style.left = (r.left + r.width / 2) + "px";
+}
+new ResizeObserver(placeComposer).observe(document.querySelector(".chat"));
+addEventListener("resize", placeComposer);
+
+// Put an earlier question back in the box to change it and ask again (the answer comes as a new turn).
+function editQuestion(i) {
+  const b = asked[i];
+  if (!b) return;
+  resetComposer();
+  $("name").value = b.name;
+  $("description").value = b.description || "";
+  document.querySelectorAll("input[name=department]").forEach(r => { r.checked = r.value === b.department; });
+  fillCategories();
+  $("category").value = b.category || "";
+  $("cost").value = b.cost;
+  $("price").value = b.price || "";
+  if (b.image) {   // the photo it was asked with (already cut to the product)
+    photoData = b.image; pickedImage = null; found = [];
+    $("photo-preview").src = b.image; $("cmp-photo").hidden = false;
+  }
+  updateSummary(); autoGrow();
+  $("price-hint").hidden = false;
+  $("price-hint").textContent = "Editing an earlier question: change anything, then press the arrow to ask again.";
+  $("name").focus();
+}
+
+// Clear the box for the next question (cost stays: it's often the same supplier).
+function resetComposer() {
+  clearPhoto();
+  $("name").value = ""; $("description").value = ""; $("category").value = "";
+  document.querySelectorAll("input[name=department]").forEach(r => { r.checked = false; }); fillCategories();
+  $("price").value = ""; delete $("price").dataset.auto;
+  $("price-hint").hidden = true; updateSummary();
+}
+function composerHint(msg) {
+  $("price-hint").hidden = false;
+  $("price-hint").innerHTML = `<span class="bad-text">${esc(msg)}</span>`;
+}
+
+// The verdict, with each agent's events streamed as they happen (one JSON object per line).
+async function evaluateStreamed(body, onEvent, signal) {
+  const res = await fetch("/api/evaluate/stream", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body), signal});
+  if (res.status === 404 || res.status === 405 || !res.body) return evaluatePlain(body);
+  if (!res.ok) {
+    const d = await res.json().catch(() => ({}));
+    throw new Error(typeof d.detail === "string" ? d.detail : `The server answered ${res.status}. Check the form and try again.`);
+  }
+  const reader = res.body.getReader(), decoder = new TextDecoder();
+  let buffer = "", result = null;
+  for (;;) {
+    const {value, done} = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, {stream: true});
+    let i;
+    while ((i = buffer.indexOf("\n")) >= 0) {
+      const line = buffer.slice(0, i).trim();
+      buffer = buffer.slice(i + 1);
+      if (!line) continue;
+      const ev = JSON.parse(line);
+      if (ev.type === "result") result = ev.data;
+      else if (ev.type === "error") throw new Error(ev.detail);
+      else onEvent(ev);
+    }
+  }
+  if (!result) throw new Error("The connection closed before the verdict was ready. Try again.");
+  return result;
+}
+async function evaluatePlain(body) {
+  const res = await fetch("/api/evaluate", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body)});
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(typeof data.detail === "string" ? data.detail : `The server answered ${res.status}. Check the form and try again.`);
+  return data;
 }
 
 // --- rendering ---
@@ -224,80 +658,139 @@ function sparkline(values) {
     <circle cx="${x(last)}" cy="${y(values[last])}" r="4" fill="var(--brand)"/></svg>`;
 }
 
+// A product's picture, or a tile with the store's initial when there's no real picture (never a made-up one).
+function thumbHTML(src, label) {
+  const tile = `<span class="thumb tile" aria-hidden="true">${esc((label || "?").trim().charAt(0).toUpperCase())}</span>`;
+  if (!src) return tile;
+  return `<span class="thumb"><img src="${esc(src)}" alt="" loading="lazy" referrerpolicy="no-referrer"
+    onerror="this.parentElement.outerHTML='${tile.replace(/"/g, "&quot;")}'"></span>`;
+}
+function ratingHTML(p) {
+  if (!p.rating) return `<span class="rating none">No rating found</span>`;
+  const full = Math.round(p.rating);
+  return `<span class="rating" title="Rating ${p.rating} out of 5, from the ${esc(p.rating_source || "search results")}">
+    <span class="stars" aria-hidden="true">${"★".repeat(full)}<span class="off">${"★".repeat(5 - full)}</span></span>
+    <b>${p.rating.toFixed(1)}</b>${p.reviews ? ` <span class="hint">(${num(p.reviews)} ratings)</span>` : ""}</span>`;
+}
 function competitorsHTML(list, mine, range) {
   if (!list || !list.length) return "";
   const rows = [...list].sort((a, b) => (a.price_inr ?? 1e12) - (b.price_inr ?? 1e12));
   const rangeText = range && range.low_inr && range.high_inr ? `Online range ${inr(range.low_inr)} to ${inr(range.high_inr)}` : "From Google Search";
-  return `<div class="panel section">
-    <div class="section-head"><h2>Competitor products</h2><span class="hint">${esc(rangeText)}</span></div>
+  return `<section class="ref">
+    <div class="section-head"><h3>Similar products online</h3><span class="hint">${esc(rangeText)}</span></div>
     <ul class="comp-list">
-      <li class="comp mine"><div><div class="nm">${esc(mine.name)} <span class="hint">(yours)</span></div><div class="st">Your proposed price</div></div>
+      <li class="comp mine">${thumbHTML(mine.image, mine.name)}<div><div class="nm">${esc(mine.name)} <span class="hint">(yours)</span></div><div class="st">Your proposed price</div></div>
         <span class="pr">${inr(mine.price)}</span><span></span></li>
-      ${rows.map(p => `<li class="comp"><div><div class="nm">${esc(p.name)}</div><div class="st">${esc(p.store)}</div></div>
+      ${rows.map(p => `<li class="comp">${thumbHTML(p.image, p.store)}<div><div class="nm">${esc(p.name)}</div>
+          <div class="st"><span>${esc(p.store)}</span>${ratingHTML(p)}</div></div>
         <span class="pr">${inr(p.price_inr)}</span>
         <a href="${esc(p.url)}" target="_blank" rel="noopener">${p.link_type === "product" ? "View product ↗" : "Search " + esc(p.store) + " ↗"}</a></li>`).join("")}
     </ul>
-    <p class="note">"View product" opens a page Google Search found for this product. "Search" opens that store's search for it.</p>
-  </div>`;
+    <p class="note">"View product" opens the exact product page Google Search found; its price and picture come from that page. "Search" opens the store's search when no exact page was found.</p>
+  </section>`;
 }
 
-function render(d, body) {
+// GoNoGo's reaction to a verdict, in plain words (the verdict itself is decided by the rules in code).
+function gogoReaction(d, body) {
+  const fits = !(d.checks || []).some(c => c.id === "fits_shop" && !c.passed);
+  const dead = (d.checks || []).some(c => c.id === "existing_stock" && !c.passed && c.hard);
+  if (d.verdict === "go") return `Good news: I'd stock this. The numbers work at <b>${inr(d.key_numbers?.price)}</b>.`;
+  if (d.verdict === "go_with_conditions") return "You can, but carefully. Here's what I'd watch:";
+  if (!fits) return `I'd skip this one: it isn't really what ${esc(org.shop_name || "your shop")} sells.`;
+  if (dead) return "I'd skip buying more: you already have unsold stock of this.";
+  return "I'd skip this one for now. Here's why:";
+}
+// The important part of an answer, in the chat: verdict, key numbers, reasons.
+function answerHTML(d, body, idx) {
   const k = d.key_numbers || {};
   const bw = k.breakeven_weeks;
-  const kpis = [
-    ["Selling price", inr(k.price), k.price_assumed ? "suggested (2.2x cost)" : "your price"],
-    ["Expected sales", k.expected_monthly_units != null ? Math.round(k.expected_monthly_units) + " / month" : "-", "from comparable products"],
-    ["Margin", k.margin != null ? (k.margin * 100).toFixed(1) + "%" : "-", "after fees, shipping, returns"],
-    ["Break-even", bw != null ? "week " + Math.max(1, Math.ceil(bw)) : "never", "launch cost recovered"],
-    ["Opening order", k.opening_stock != null ? k.opening_stock + " units" : "-", "lead time + cover"],
-    ["Cash tied up", inr(k.cash_tied), "in opening stock"],
-  ];
-  const agents = d.agents || {};
-  const failed = Object.entries(agents).filter(([, a]) => a.status === "failed").map(([n]) => AGENT_INFO[n]?.[0] || n);
-
-  $("results").innerHTML = `
+  const nums = [
+    ["Selling price", inr(k.price), k.price_assumed ? "suggested: 2.2 × your cost" : "your price"],
+    ["Expected sales", k.expected_monthly_units != null ? Math.round(k.expected_monthly_units) + " a month" : "-", "what similar products sell"],
+    ["You keep", k.margin != null ? Math.round(k.margin * 100) + "%" : "-", "of each sale, after costs"],
+    ["Launch cost back by", bw != null ? "week " + Math.max(1, Math.ceil(bw)) : "-", "from the profit on sales"],
+    ["Order to start", k.opening_stock == null ? "-" : k.opening_stock === 0 ? "Don't order yet" : `${num(k.opening_stock)} unit${k.opening_stock === 1 ? "" : "s"}`,
+      k.opening_stock === 0 ? "no sales expected" : `${inr(k.opening_stock * k.cost)} at your cost · covers about ${k.cover_weeks_total} weeks of sales`],
+    ["Cash needed", k.cash_needed != null ? inr(k.cash_needed) : "-",
+      (k.opening_stock ? `${num(k.opening_stock)} × ${inr(k.cost)} + ${inr(k.launch_cost)} launch cost` : `${inr(k.launch_cost)} launch cost`) +
+      (k.budget_per_launch != null ? ` · of your ${inr(k.budget_per_launch)} test budget` : "")],
+  ].filter(([, v]) => v !== "-");
+  const failed = Object.entries(d.agents || {}).filter(([, a]) => a.status === "failed").map(([n]) => PERSONAS[n]?.name || n);
+  return `
+    ${gogoSay(gogoReaction(d, body), "react")}
     <div class="verdict ${esc(d.verdict)}">
       <div class="word">${esc(WORD[d.verdict] || d.verdict)}</div>
       <p class="headline">${esc(d.headline)}</p>
       ${d.conditions && d.conditions.length ? `<ul>${d.conditions.map(c => `<li>${esc(c)}</li>`).join("")}</ul>` : ""}
       ${d.advice ? `<p class="advice">${esc(d.advice)}</p>` : ""}
     </div>
-    ${failed.length ? `<div class="error"><strong>Partial result.</strong> ${esc(failed.join(", "))} did not finish; the verdict uses the other agents.</div>` : ""}
-    <div class="kpis">${kpis.map(([a, b, c]) => `<div class="kpi"><span class="k">${esc(a)}</span><span class="v">${esc(b)}</span><span class="s">${esc(c)}</span></div>`).join("")}</div>
-
-    <div class="panel section">
-      <div class="section-head"><h2>Why</h2><span class="hint">Open a reason to see its evidence</span></div>
+    ${failed.length ? `<p class="note">${esc(failed.join(", "))} couldn't finish, so the answer uses the others.</p>` : ""}
+    ${nums.length ? `<div class="kpis">${nums.map(([a, b, c]) => `<div class="kpi"><span class="k">${esc(a)}</span><span class="v">${esc(b)}</span><span class="s">${esc(c)}</span></div>`).join("")}</div>` : ""}
+    ${k.moq_cash_needed ? `<p class="moq-note">Your ${esc(d.agents?.product?.result?.category || "")} supplier${k.supplier_name ? ` (${esc(k.supplier_name)})` : ""}
+      usually needs at least <b>${num(k.supplier_moq)} units</b> per order. Ordering that many would need <b>${inr(k.moq_cash_needed)}</b>,
+      so agree a smaller first batch, or plan for the larger amount.</p>` : ""}
+    <div class="why">
+      <h3>Why</h3>
       ${(d.reasons || []).map((rs, i) => `
-        <details class="reason"${i === 0 ? " open" : ""}>
-          <summary><span class="num">0${i + 1}</span><span>${esc(rs.text)}</span><span class="agent-tag">${esc(AGENT_INFO[rs.agent]?.[0] || rs.agent)}</span></summary>
+        <details class="reason">
+          <summary><span class="num">${i + 1}</span><span>${esc(rs.text)}</span>${avatarHTML(rs.agent in PERSONAS ? rs.agent : "verdict")}</summary>
           <div class="evidence">${evidenceHTML(rs.evidence)}</div>
         </details>`).join("")}
     </div>
+    <div class="msg-actions">
+      <button type="button" onclick="copyAnswer(${idx}, this)">⧉ Copy</button>
+      <button type="button" onclick="ask({...answers[${idx}].body})">↻ Retry</button>
+      <button type="button" class="refs-btn" onclick="showRefs(${idx}, true)">References →</button>
+    </div>`;
+}
 
-    ${competitorsHTML(d.competitor_products, {name: body.name, price: k.price}, d.market_range)}
+// The less important but useful part, on the right: what to check if you want to dig in.
+function openRefs() {
+  document.body.classList.add("refs-open");   // the conversation makes room for the panel
+  setTimeout(placeComposer, 320);
+  $("refs").classList.add("open"); $("refs").setAttribute("aria-hidden", "false");
+  $("refs-toggle").setAttribute("aria-expanded", "true");
+  $("refs-toggle").querySelector(".new-dot").hidden = true;
+}
+function closeRefs() {
+  document.body.classList.remove("refs-open");
+  setTimeout(placeComposer, 320);
+  $("refs").classList.remove("open"); $("refs").setAttribute("aria-hidden", "true");
+  $("refs-toggle").setAttribute("aria-expanded", "false");
+}
+$("refs-toggle").addEventListener("click", () => $("refs").classList.contains("open") ? closeRefs() : openRefs());
+addEventListener("keydown", (e) => { if (e.key === "Escape" && $("refs").classList.contains("open")) closeRefs(); });
 
-    <div class="panel section">
-      <div class="section-head"><h2>Your rules</h2><a class="hint" href="/organisation">Edit on Organisation</a></div>
+function showRefs(idx, open) {
+  const {data: d, body} = answers[idx];
+  const k = d.key_numbers || {};
+  const agents = d.agents || {};
+  $("refs-toggle").hidden = false;
+  $("refs-for").textContent = body.name;
+  $("refs-body").innerHTML = `
+    ${competitorsHTML(d.competitor_products, {name: body.name, price: k.price, image: body.image}, d.market_range)}
+    <section class="ref">
+      <div class="section-head"><h3>Your rules</h3><a class="hint" href="/business">Edit</a></div>
       <ul class="checks">${(d.checks || []).map(c => `
         <li><span class="pill ${c.passed ? "pass" : (c.hard ? "fail" : "warn")}">${c.passed ? "Pass" : (c.hard ? "Fail" : "Watch")}</span>
         <span>${esc(c.label)}${c.hard ? "" : ' <span class="hint">(soft)</span>'}</span><span class="val">${esc(c.value)}</span></li>`).join("")}</ul>
-    </div>
-
-    ${d.trend && d.trend.length ? `<div class="panel section">
-      <div class="section-head"><h2>Demand for comparable products</h2><span class="hint">Units per 30 days, last 12 months</span></div>
+    </section>
+    ${d.trend && d.trend.length ? `<section class="ref">
+      <div class="section-head"><h3>How similar products sold</h3><span class="hint">units a month, last 12 months</span></div>
       ${sparkline(d.trend)}
-    </div>` : ""}
-
-    <div class="panel section">
-      <div class="section-head"><h2>The agents</h2><span class="hint">Finished in ${(d.timing_ms / 1000).toFixed(1)}s</span></div>
-      <div class="agents">${Object.keys(AGENT_INFO).filter(n => agents[n]).map(n => {
-        const a = agents[n];
-        return `<details class="agent"><summary><span class="name"><span class="dot ${esc(a.status)}"></span>${esc(AGENT_INFO[n][0])}</span>
-          <span class="meta">${esc(a.status)} · ${(a.ms / 1000).toFixed(1)}s</span></summary>
-          <div class="evidence">${a.status === "failed" ? `<p class="note">${esc(a.error)}</p>` : evidenceHTML(a.evidence)}${a.note ? `<p class="note">${esc(a.note)}</p>` : ""}</div></details>`;
-      }).join("")}</div>
-    </div>`;
-  $("results").scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start"});
+    </section>` : ""}
+    <section class="ref">
+      <div class="section-head"><h3>What each agent found</h3><span class="hint">${d.timing_ms != null ? (d.timing_ms / 1000).toFixed(0) + "s" : ""}</span></div>
+      ${AGENT_ORDER.filter(n => agents[n]).map(n => {
+        const a = agents[n], p = PERSONAS[n];
+        const line = a.status === "failed" ? "Couldn't finish." : a.status === "skipped" ? "Not needed." : (a.summary || "Done.");
+        return `<details class="agent-ref"><summary>${avatarHTML(n)}<span><b>${esc(p.name)}</b> <span class="hint">${esc(p.job)}</span><small>${esc(line)}</small></span></summary>
+          <div class="evidence">${a.status === "failed" ? `<p class="note">${esc(a.error || "")}</p>` : evidenceHTML(a.evidence)}${a.note ? `<p class="note">${esc(a.note)}</p>` : ""}</div></details>`;
+      }).join("")}
+    </section>`;
+  document.querySelectorAll(".refs-btn").forEach((b, i) => b.classList.toggle("on", i === idx));
+  if (open) openRefs();
+  else if (!$("refs").classList.contains("open")) $("refs-toggle").querySelector(".new-dot").hidden = false;   // new, not seen yet
 }
 </script>
 </body>

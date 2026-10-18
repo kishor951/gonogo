@@ -12,6 +12,8 @@ from agents.common import evidence
 
 
 class ProductOut(BaseModel):
+    fits_shop: bool
+    what_it_is: str
     department: str
     category: str
     product_type: str
@@ -32,7 +34,7 @@ def _closest(value: str | None, options: list[str]) -> str:
     return match[0] if match else options[0]
 
 
-async def run_product(req, categories):
+async def run_product(req, categories, brief: str = ""):
     allowed = allowed_by_department(categories)
 
     if MOCK:
@@ -41,6 +43,9 @@ async def run_product(req, categories):
         lines = "\n".join(f"- {dept}: {', '.join(cats)}" for dept, cats in allowed.items())
         prompt = f"""You are the Product agent in GoNoGo, a tool that helps a retailer decide whether to launch a new product.
 Turn the seller's product idea into structured attributes.
+
+The shop (judge the product against this definition):
+{brief or '(not given)'}
 
 Product name: {req.name}
 Description: {req.description or "(none)"}
@@ -58,7 +63,11 @@ Rules:
 - product_type: two to four words, e.g. "high-waist leggings".
 - key_attributes: three to five short attributes (material, fit, use, style).
 - short_description: one plain sentence a shopper would understand.
-- search_query: the phrase an Indian online shopper would type to find this product."""
+- search_query: the phrase an Indian online shopper would type to find this product.
+- what_it_is: two to five plain words naming what the product actually is, e.g. "brass puja lamp".
+- fits_shop: true only if the product genuinely is the kind of item in the chosen category, the shop sells
+  that kind of item at all, and it is not on the shop's "never sells" list. A brass lamp, a phone case or a toy is not apparel, even if the seller
+  picked a category for it. Judge from the photo and description, not the category the seller chose."""
         parts = [prompt]
         if req.image:
             parts.append(_image_part(req.image))
@@ -72,12 +81,15 @@ Rules:
     if cat not in allowed[dept]:
         cat = _closest(cat, allowed[dept])
     data.update(department=dept, category=cat)
+    data["fits_shop"] = data.get("fits_shop") is not False
+    data.setdefault("what_it_is", data.get("product_type", ""))
 
     ev = evidence(
         summary=[
             ["Department", dept],
             ["Category in store data", cat],
             ["Product type", data.get("product_type", "-")],
+            ["Fits a category the shop sells", "yes" if data["fits_shop"] else f"no: {data['what_it_is']}"],
             ["Attributes", ", ".join(data.get("key_attributes", [])) or "-"],
         ],
         note="Read from the seller's description" + (" and photo" if req.image else "") + " by Gemini.",

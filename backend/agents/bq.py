@@ -3,7 +3,7 @@ import asyncio
 import pathlib
 from functools import lru_cache
 
-from config import project_id
+from config import DATASET, project_id
 
 SQL_DIR = pathlib.Path(__file__).resolve().parent.parent / "sql"
 
@@ -15,7 +15,8 @@ def _client():
 
 
 def load_sql(name: str) -> str:
-    return (SQL_DIR / f"{name}.sql").read_text()
+    """The query text, with {dataset} replaced by the shop's dataset (GONOGO_DATASET)."""
+    return (SQL_DIR / f"{name}.sql").read_text().replace("{dataset}", DATASET)
 
 
 def _param(key, value):

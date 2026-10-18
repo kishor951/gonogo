@@ -83,7 +83,7 @@ Print row counts at the end.
 
 ## Batch 2 — Inventory page + Inventory agent
 
-### 2a. Inventory page (`/inventory`)
+### 2a. Inventory page (`/inventory`) — done early, with the sidebar pages
 - Totals: stock value at cost, SKUs, units on hand, dead-stock value, SKUs to reorder, overstock value.
 - Table of all SKUs: name, category, on hand, on order, sales per week (last 8 weeks), days of cover, sell-through % (90 days),
   stock value, status pill: **Reorder** (on_hand + on_order < reorder_point), **Healthy**, **Overstock** (cover > 120 days), **Dead stock** (no sales 90 days).
@@ -104,7 +104,7 @@ Evidence: table of the overlapping SKUs with links to `/inventory?sku=...`.
 
 ## Batch 3 — Discovery upgrades
 
-### 3a. Start from a photo (`POST /api/autofill`)
+### 3a. Start from a photo (`POST /api/autofill`) — done
 Upload a photo (or a photo + a few words) → Gemini (vision) returns name, description, department, category
 (from the shop's category list), and a suggested selling price range from the shop's comparable products (SQL, not Gemini).
 The form fills in; the seller can edit, then run. Make the photo the first, most prominent input.

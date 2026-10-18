@@ -7,3 +7,6 @@ venv/
 *.json
 !package.json
 .DS_Store
+
+# generated demo data (python scripts/generate_shop_data.py)
+scripts/data/

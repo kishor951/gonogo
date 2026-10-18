@@ -46,17 +46,29 @@ async def generate_json(parts, schema=None, temperature=0.2, search=False):
         config=types.GenerateContentConfig(**config),
     )
     data = parse_json(response.text)
+    return data, (_sources(response) if search else [])
 
-    sources = []
-    if search:
-        try:
-            metadata = response.candidates[0].grounding_metadata
-            seen = set()
-            for chunk in (metadata.grounding_chunks or []):
-                web = getattr(chunk, "web", None)
-                if web and web.uri and web.uri not in seen:
-                    seen.add(web.uri)
-                    sources.append({"title": web.title or web.uri, "url": web.uri})
-        except Exception:
-            pass  # sources are a bonus; never fail the agent over them
-    return data, sources
+
+def _sources(response) -> list[dict]:
+    """The pages Google Search returned (grounding chunks), never URLs the model wrote."""
+    sources, seen = [], set()
+    try:
+        for chunk in (response.candidates[0].grounding_metadata.grounding_chunks or []):
+            web = getattr(chunk, "web", None)
+            if web and web.uri and web.uri not in seen:
+                seen.add(web.uri)
+                sources.append({"title": web.title or web.uri, "url": web.uri})
+    except Exception:
+        pass  # sources are a bonus; never fail the agent over them
+    return sources
+
+
+async def search_pages(prompt: str, temperature=0.2) -> list[dict]:
+    """Run a Google Search grounded prompt in plain text and return only the pages Search used.
+    (Asking for JSON-only replies makes the model search less, so this one asks for prose.)"""
+    from google.genai import types
+    response = await client().aio.models.generate_content(
+        model=GEMINI_MODEL, contents=[prompt],
+        config=types.GenerateContentConfig(tools=[types.Tool(google_search=types.GoogleSearch())], temperature=temperature),
+    )
+    return _sources(response)

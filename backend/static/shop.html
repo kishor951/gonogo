@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>GoNoGo Shop profile</title>
+<meta name="description" content="What your shop is: the definition GoNoGo judges every new product against.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%23137a4f'/%3E%3Ccircle cx='20' cy='20' r='15.5' fill='none' stroke='white' stroke-opacity='.25' stroke-width='1.4'/%3E%3Cg transform='rotate(40 20 20)'%3E%3Cpath d='M20 6.5L25 20H15Z' fill='white'/%3E%3Cpath d='M15 20H25L20 33.5Z' fill='white' fill-opacity='.4'/%3E%3Ccircle cx='20' cy='20' r='2.3' fill='%23137a4f'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+<div class="app">
+<aside class="side" id="side"></aside>
+<main class="wrap">
+  <div class="page-head"><h1>Shop profile</h1><p class="hint">What your shop is. GoNoGo judges every new product against this definition.</p></div>
+
+  <div class="org">
+    <form class="panel rules-form" id="profile-form" novalidate>
+      <div class="section-head"><h2>Your shop</h2><span class="badge" id="conn">Loading…</span></div>
+      <div class="field">
+        <label for="shop_name">Shop name</label>
+        <input type="text" id="shop_name" maxlength="80" placeholder="e.g. Urban Loom">
+      </div>
+      <div class="field">
+        <label for="tagline">Tagline</label>
+        <input type="text" id="tagline" maxlength="120" placeholder="One line on what you stand for">
+      </div>
+      <div class="field">
+        <label for="description">What the shop is</label>
+        <textarea id="description" maxlength="600" rows="3" placeholder="What you sell, where, and at what kind of price"></textarea>
+      </div>
+      <div class="field">
+        <label for="target_customer">Who you sell to</label>
+        <textarea id="target_customer" maxlength="400" rows="2" placeholder="Age, city, what they want"></textarea>
+      </div>
+      <div class="field">
+        <span class="label" id="pos-label">Price positioning</span>
+        <div class="seg" role="radiogroup" aria-labelledby="pos-label">
+          <label><input type="radio" name="positioning" value="value"><span>Value</span></label>
+          <label><input type="radio" name="positioning" value="mid"><span>Mid-market</span></label>
+          <label><input type="radio" name="positioning" value="premium"><span>Premium</span></label>
+        </div>
+      </div>
+      <div class="field">
+        <label for="style">Style</label>
+        <textarea id="style" maxlength="300" rows="2" placeholder="Look, fabrics, what makes it yours"></textarea>
+      </div>
+      <div class="field">
+        <label for="never_sells">Never sells</label>
+        <input type="text" id="never_sells" maxlength="300" placeholder="e.g. kids' wear, footwear, home items">
+        <span class="hint">Hard rule: a product on this list is always a No-go.</span>
+      </div>
+      <div class="row2">
+        <div class="field"><label for="based_in">Based in</label><input type="text" id="based_in" maxlength="60"></div>
+        <div class="field"><label for="founded">Founded</label><input type="text" id="founded" maxlength="10" inputmode="numeric"></div>
+      </div>
+      <div class="actions">
+        <button class="btn" type="submit" id="save" disabled>Save profile</button>
+      </div>
+      <p class="saved" id="saved" role="status"></p>
+      <p class="note" id="source">Saved in BigQuery with your rules.</p>
+    </form>
+
+    <section class="results" aria-label="What your data says">
+      <div class="panel section">
+        <div class="section-head"><h2>What your data says</h2><span class="hint">From BigQuery</span></div>
+        <div class="stats" id="facts"></div>
+        <div id="channels" class="chips"></div>
+      </div>
+      <div class="panel section" id="budget-panel">
+        <div class="section-head"><h2>Experiment budget</h2><span class="hint">What you can afford to test, from your own numbers</span></div>
+        <div class="budget-hero" id="budget-hero"><p class="note">Working it out…</p></div>
+        <h3 class="budget-sub">How it's worked out</h3>
+        <div class="tbl-wrap" id="budget-steps"></div>
+        <div class="bands" id="budget-bands"></div>
+        <p class="note">Every new product's first order plus launch cost must fit the per-launch budget, or the verdict is No-go.
+          Change the share of profit and launches per month in <a href="/business">your rules</a>.</p>
+      </div>
+      <div class="panel section">
+        <div class="section-head"><h2>What you sell</h2><span class="hint" id="cat-count"></span></div>
+        <div class="tbl-wrap" id="cats"><p class="note">Loading…</p></div>
+        <p class="note">Categories come from your active products. A new product must fit one of them, or it's a No-go.</p>
+      </div>
+      <div class="panel section">
+        <div class="section-head"><h2>What the agents read</h2><span class="hint">Updates when you save</span></div>
+        <pre class="brief" id="brief">Loading…</pre>
+      </div>
+    </section>
+  </div>
+</main>
+</div>
+
+<script src="/static/shared.js"></script>
+<script>
+const FIELDS = ["tagline", "description", "target_customer", "style", "never_sells", "based_in", "founded"];
+let org = loadOrg();
+
+function setStatus(text, bad) { $("saved").textContent = text; $("saved").classList.toggle("bad", !!bad); }
+function fill(s) {
+  $("shop_name").value = s.shop_name || "";
+  const p = s.profile || {};
+  FIELDS.forEach(k => { $(k).value = p[k] || ""; });
+  document.querySelectorAll("input[name=positioning]").forEach(r => { r.checked = r.value === (p.positioning || "mid"); });
+  if ("brief" in s) $("brief").textContent = s.brief || "Couldn't build the definition. Check the connection to BigQuery, then reload.";
+}
+// Show this browser's last copy at once; Save stays off until the saved profile has loaded,
+// so a quick click can never overwrite it with an empty form.
+if (org.shop_name) fill(org);
+async function loadProfile() {
+  try {
+    const res = await fetch("/api/settings");
+    const s = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(typeof s.detail === "string" ? s.detail : `The server answered ${res.status}.`);
+    fill(s);
+    saveOrg({shop_name: s.shop_name, rules: s.rules, profile: s.profile});
+    if (typeof setSidebarShop === "function") setSidebarShop(s.shop_name, (s.profile || {}).tagline);
+    $("save").disabled = false;
+    $("conn").textContent = "Connected"; $("conn").classList.remove("off");
+    $("source").textContent = s.updated_at ? `Saved in BigQuery, last changed ${new Date(s.updated_at).toLocaleString("en-IN", {dateStyle: "medium", timeStyle: "short"})}.` : "Using the default profile. Save it to keep your changes.";
+  } catch (err) {
+    $("conn").textContent = "Not connected"; $("conn").classList.add("off");
+    setStatus(`Couldn't load the profile: ${err.message} Reload the page to try again.`, true);
+  }
+}
+loadProfile();
+
+// --- experiment budget: the sum, step by step (worked out in code from the shop's numbers) ---
+function bandChips(title, bands, active) {
+  return `<div class="band-row"><span class="hint">${esc(title)}</span>${bands.map(([label, f]) =>
+    `<span class="chip static${f === active.factor && label === active.label ? " on" : ""}">${esc(label)} ×${f}</span>`).join("")}</div>`;
+}
+fetch("/api/budget").then(async r => {
+  const b = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(typeof b.detail === "string" ? b.detail : `The server answered ${r.status}.`);
+  return b;
+}).then(b => {
+  $("budget-hero").innerHTML = `<div class="budget-nums">
+      <div><span class="k">Per month</span><span class="v">${esc(inr(b.monthly_budget))}</span><span class="s">for testing new products</span></div>
+      <div><span class="k">Per launch</span><span class="v">${esc(inr(b.per_launch))}</span><span class="s">${b.launches_per_month} launches a month</span></div>
+    </div>`;
+  $("budget-steps").innerHTML = `<table class="budget-table"><tbody>${b.steps.map(([k, v]) =>
+    `<tr class="${k.startsWith("=") ? "total" : ""}"><td>${esc(k)}</td><td class="n">${esc(v)}</td></tr>`).join("")}</tbody></table>`;
+  const g = b.growth, sl = b.slow_stock_share;
+  const gLabel = g == null ? "" : g >= 0.10 ? "growing 10%+" : g >= 0 ? "0 to 10%" : "shrinking";
+  const sLabel = sl > 0.30 ? "over 30%" : sl > 0.15 ? "15 to 30%" : "up to 15%";
+  $("budget-bands").innerHTML =
+    bandChips(`Growth (yours: ${g == null ? "no year-ago sales" : (g >= 0 ? "+" : "") + Math.round(g * 100) + "%"})`,
+      [["growing 10%+", 1.2], ["0 to 10%", 1], ["shrinking", 0.7]], {label: gLabel, factor: b.growth_factor}) +
+    bandChips(`Slow stock (yours: ${Math.round(sl * 100)}% of stock value)`,
+      [["up to 15%", 1], ["15 to 30%", 0.85], ["over 30%", 0.7]], {label: sLabel, factor: b.stock_factor});
+}).catch(err => { $("budget-hero").innerHTML = `<p class="note">${esc(err.message)}</p>`; });
+
+$("profile-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const profile = Object.fromEntries(FIELDS.map(k => [k, $(k).value.trim()]));
+  profile.positioning = document.querySelector("input[name=positioning]:checked")?.value || "mid";
+  $("save").disabled = true; setStatus("Saving…");
+  try {
+    await putSettings({shop_name: $("shop_name").value.trim(), profile});
+    await loadProfile();   // refreshes the form, the agents' definition and the sidebar card
+    setStatus("Saved. Every new verdict uses this profile.");
+  } catch (err) {
+    setStatus(`Couldn't save to BigQuery: ${err.message}`, true);
+  } finally {
+    $("save").disabled = false;
+  }
+});
+$("profile-form").addEventListener("input", () => setStatus(""));
+
+// --- facts from the shop's own data ---
+const json = (url) => fetch(url).then(r => r.ok ? r.json() : Promise.reject(r));
+json("/api/categories").then(rows => {
+  const prices = rows.flatMap(r => [r.min_price_inr, r.max_price_inr]).filter(v => v != null);
+  $("cat-count").textContent = `${rows.length} categories`;
+  $("cats").innerHTML = `<table><thead><tr><th>Category</th><th>Dept</th><th class="n">Products</th><th class="n">Price range</th></tr></thead><tbody>${
+    rows.map(r => `<tr><td>${esc(r.category)}</td><td>${esc(r.department)}</td><td class="n">${num(r.products)}</td>
+      <td class="n nowrap">${inr(r.min_price_inr)} – ${inr(r.max_price_inr)}</td></tr>`).join("")}</tbody></table>`;
+  $("facts").insertAdjacentHTML("afterbegin", `
+    <div class="kpi"><span class="k">Active products</span><span class="v">${num(rows.reduce((a, r) => a + r.products, 0))}</span><span class="s">${[...new Set(rows.map(r => r.department))].join(" and ")}</span></div>
+    <div class="kpi"><span class="k">Price range</span><span class="v range"><span class="nowrap">${inr(Math.min(...prices))} –</span> <span class="nowrap">${inr(Math.max(...prices))}</span></span><span class="s">list prices</span></div>`);
+}).catch(() => { $("cats").innerHTML = `<p class="note">Couldn't read the categories from BigQuery.</p>`; });
+
+Promise.all([json("/api/business"), json("/api/pages/customers")]).then(([b, c]) => {
+  const ages = (c.tables.find(t => t.id === "ages") || {rows: []}).rows;
+  const cities = (c.tables.find(t => t.id === "cities") || {rows: []}).rows;
+  const topAge = [...ages].sort((x, y) => y.revenue - x.revenue)[0];
+  const aov = b.kpis.find(k => k.id === "aov");
+  $("facts").insertAdjacentHTML("beforeend", `
+    <div class="kpi"><span class="k">Average order</span><span class="v">${inr(aov && aov.value)}</span><span class="s">last 12 months</span></div>
+    <div class="kpi"><span class="k">Biggest age group</span><span class="v">${esc(topAge ? topAge.label : "-")}</span><span class="s">by revenue</span></div>
+    <div class="kpi"><span class="k">Top cities</span><span class="v small">${esc(cities.slice(0, 3).map(r => r.label).join(", ") || "-")}</span><span class="s">by revenue</span></div>
+    <div class="kpi"><span class="k">Customers</span><span class="v">${num(b.customers_12m)}</span><span class="s">bought in 12 months</span></div>`);
+  $("channels").innerHTML = `<span class="hint">Sells on</span>` + b.channels.map(ch => `<span class="chip static">${esc(ch.label)} · ${pctText(ch.share, 0)}</span>`).join("");
+}).catch(() => {});
+</script>
+</body>
+</html>

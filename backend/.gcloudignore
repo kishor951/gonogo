@@ -1,0 +1,11 @@
+# Files gcloud run deploy --source should not upload
+.gcloudignore
+.git
+.venv/
+venv/
+__pycache__/
+*.pyc
+.env
+*.json
+!package.json
+.DS_Store

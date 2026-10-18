@@ -13,7 +13,10 @@ CASES = [
     EvaluateRequest(name="High-waist active leggings", description="Squat-proof stretch leggings with a side phone pocket",
                     department="Women", category="Leggings", cost=450, price=1299),
     EvaluateRequest(name="Double-breasted wool overcoat", description="Long, heavy wool-blend winter overcoat",
-                    department="Men", category="Outerwear & Coats", cost=6500, price=8999),
+                    department="Men", category="Outerwear", cost=6500, price=8999),
+    # Not something the shop sells, forced into a category: must be NO_GO (fits_shop rule).
+    EvaluateRequest(name="Golden brass puja diya", description="Small brass oil lamp on a pedestal base",
+                    department="Men", category="T-Shirts", cost=100, price=599),
 ]
 
 

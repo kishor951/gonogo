@@ -1,31 +1,29 @@
--- Comparable products: same department and category, price within +/- @band of the proposed price.
--- Units sold and returned in the last 360 days (counted back from the newest order in the data).
+-- Comparable products: same department and category, list price within +/- @band of the proposed price.
+-- Units sold and returned in the last 12 months (counted back from the newest order in the data).
 WITH anchor AS (
-  SELECT MAX(created_at) AS t FROM `bigquery-public-data.thelook_ecommerce.order_items`
+  SELECT MAX(order_date) AS d FROM `{dataset}.sales`
 ),
 seg AS (
-  SELECT id, name, brand, retail_price
-  FROM `bigquery-public-data.thelook_ecommerce.products`
+  SELECT sku, name, brand, price_inr, status
+  FROM `{dataset}.products`
   WHERE category = @category
     AND department = @department
-    AND retail_price BETWEEN @price_usd * (1 - @band) AND @price_usd * (1 + @band)
+    AND price_inr BETWEEN @price * (1 - @band) AND @price * (1 + @band)
 ),
-sales AS (
-  SELECT
-    oi.product_id,
-    COUNTIF(oi.status != 'Cancelled') AS units,
-    COUNTIF(oi.status = 'Returned') AS returned
-  FROM `bigquery-public-data.thelook_ecommerce.order_items` oi, anchor
-  WHERE oi.created_at > TIMESTAMP_SUB(anchor.t, INTERVAL 360 DAY)
-  GROUP BY oi.product_id
+recent AS (
+  SELECT s.sku, s.qty, s.returned
+  FROM `{dataset}.sales` s, anchor
+  WHERE s.order_date > DATE_SUB(anchor.d, INTERVAL 365 DAY)
 )
 SELECT
-  seg.id,
+  seg.sku,
   seg.name,
   seg.brand,
-  seg.retail_price,
-  IFNULL(sales.units, 0) AS units_12m,
-  IFNULL(sales.returned, 0) AS returned_12m
+  seg.price_inr,
+  seg.status,
+  IFNULL(SUM(recent.qty), 0) AS units_12m,
+  IFNULL(SUM(IF(recent.returned, recent.qty, 0)), 0) AS returned_12m
 FROM seg
-LEFT JOIN sales ON sales.product_id = seg.id
+LEFT JOIN recent ON recent.sku = seg.sku
+GROUP BY seg.sku, seg.name, seg.brand, seg.price_inr, seg.status
 ORDER BY units_12m DESC

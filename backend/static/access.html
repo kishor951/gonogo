@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>GoNoGo · Access</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%23137a4f'/%3E%3Ccircle cx='20' cy='20' r='15.5' fill='none' stroke='white' stroke-opacity='.25' stroke-width='1.4'/%3E%3Cg transform='rotate(40 20 20)'%3E%3Cpath d='M20 6.5L25 20H15Z' fill='white'/%3E%3Cpath d='M15 20H25L20 33.5Z' fill='white' fill-opacity='.4'/%3E%3Ccircle cx='20' cy='20' r='2.3' fill='%23137a4f'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+<main class="access">
+  <form class="access-card" id="access-form" novalidate>
+    <svg width="64" height="64" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="20" fill="var(--brand)"/>
+      <circle cx="20" cy="20" r="15.5" fill="none" stroke="var(--brand-ink)" stroke-opacity=".22" stroke-width="1.2"/>
+      <g transform="rotate(40 20 20)"><path d="M20 6.5L25 20H15Z" fill="var(--brand-ink)"/><path d="M15 20H25L20 33.5Z" fill="var(--brand-ink)" fill-opacity=".38"/>
+      <circle cx="20" cy="20" r="2.3" fill="var(--brand)"/></g></svg>
+    <h1>Go<b>No</b>Go</h1>
+    <p class="hint">This demo is for the Google Cloud AI Builder Cup evaluators.<br>Enter the access code from the submission.</p>
+    <label class="sr-only" for="code">Access code</label>
+    <input type="password" id="code" autocomplete="current-password" placeholder="Access code" autofocus required>
+    <button class="btn" type="submit" id="go">Enter</button>
+    <p class="access-msg" id="msg" role="alert"></p>
+  </form>
+</main>
+<script>
+const form = document.getElementById("access-form"), msg = document.getElementById("msg"), go = document.getElementById("go");
+// only go back to a page on this site
+const next = (() => { const n = new URLSearchParams(location.search).get("next") || "/"; return n.startsWith("/") && !n.startsWith("//") ? n : "/"; })();
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const code = document.getElementById("code").value.trim();
+  if (!code) { msg.textContent = "Enter the access code."; return; }
+  go.disabled = true; msg.textContent = "";
+  try {
+    const res = await fetch("/api/access", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({code})});
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.detail || "That didn't work. Try again.");
+    location.replace(next);
+  } catch (err) {
+    msg.textContent = err.message;
+    go.disabled = false;
+  }
+});
+</script>
+</body>
+</html>
