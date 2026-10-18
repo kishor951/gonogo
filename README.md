@@ -8,8 +8,6 @@ GoNoGo is an AI launch-decision agent for retailers. The seller adds a photo (or
 
 Built for the Google Cloud AI Builder Cup 2026 (Retail & Commerce).
 
-**Live app:** https://gonogo-389639819210.asia-south1.run.app (open; 10 checks per person per hour)
-
 ## The core idea: AI explains, code decides
 
 - **Every number comes from SQL or Python**, never from the model. Gemini reads, searches and explains; prompts pass numbers in and say "never invent numbers".

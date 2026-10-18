@@ -134,5 +134,6 @@ Run from `backend/` with the virtual environment active.
   `#sop-modal`, 7 short slides (`SOP_SLIDES` in index.html) on how to use GoNoGo; a dot shows until it's opened once. Hidden once a conversation starts (`.disc.asked`).
   It opens with a 4-slide story ("Why GoNoGo") told through Priya, a shop owner: poses cut from
   `character_style_spritesheet.png` into `backend/static/sop/priya-*.png` (phone, curious, notes, sad, sigh, happy).
-- Live at https://gonogo-389639819210.asia-south1.run.app
+- Live on Cloud Run service `gonogo` (asia-south1); the URL is kept out of the repo:
+  `gcloud run services describe gonogo --region asia-south1 --format='value(status.url)'`
 - Sales cover 24 months (not 18) so the Business page can compare 12 months with the 12 before.
